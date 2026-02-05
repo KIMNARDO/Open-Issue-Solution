@@ -1,0 +1,48 @@
+# Exclude main Woory PLM projects (separate repositories)
+woory-plm-main/
+wooryplm-api-master/
+
+# IDE and tool configs
+.claude/
+.playwright-mcp/
+.vscode/
+.idea/
+
+# Temporary files
+fix_all.py
+CLAUDE.md
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+target/
+*.jar
+*.war
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files with secrets (keep .env.local as template)
+.env
+.env.production
+.env.*.local
+!open-issue-web/.env.local
+
+# Java/Gradle
+.gradle/
+*.class
+*.jar
+!gradle-wrapper.jar
+
+# Test outputs
+coverage/
+test-results/

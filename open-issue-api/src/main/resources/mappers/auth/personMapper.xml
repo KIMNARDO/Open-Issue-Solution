@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.papsnet.openissue.auth.dao.PersonDAO">
+    <select id="selPerson" parameterType="person" resultType="person">
+        SELECT A.*
+        , ID, Password, Email, Rank, EnterDt, Phone, DepartmentOID, DepartmentNm, IsUse, ImgSign, JobTitleOID, JobPositionOID, HiddenGuest, EmpNo, LastLogin, ItemOID, Nation, JobGroupOID, external_user
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPERSON B ON A.OID = B.OID
+        WHERE
+        A.TYPE = 'PERSON'
+        AND B.IsUse = 1
+        <if test="oid != null and oid != '' and oid">
+            AND A.OID = #{oid}
+        </if>
+        <if test="name != null and name != '' and name">
+            AND A.NAME LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="id != null and id != '' and id">
+            AND B.ID = #{id}
+        </if>
+        <if test="rank != null and rank != '' and rank">
+            AND B.Rank = #{rank}
+        </if>
+        <if test="departmentOID != null and departmentOID != '' and departmentOID">
+            AND B.DepartmentOID = #{departmentOID}
+        </if>
+        <if test="departmentNm != null and departmentNm != '' and departmentNm">
+            AND B.DepartmentNm LIKE CONCAT('%',#{departmentNm},'%')
+        </if>
+        <if test="isUse != null and isUse != '' and isUse">
+            AND B.IsUse = #{isUse}
+        </if>
+        <if test="oids != null and oids.size() > 0 and oids">
+            AND A.OID IN <foreach collection="oids" separator="," item="listOid" open="(" close=")"> #{listOid} </foreach>
+        </if>
+        <if test="departmentOIDs != null and departmentOIDs.size() > 0 and departmentOIDs">
+            AND B.DepartmentOID IN <foreach collection="departmentOIDs" separator="," item="departmentOID" open="(" close=")"> #{departmentOID} </foreach>
+        </if>
+    </select>
+
+    <select id="findPersonByid" parameterType="String" resultType="Person">
+        SELECT *
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPERSON B ON A.OID = B.OID
+        WHERE
+        A.TYPE = 'PERSON'
+        <if test="username != null and username != '' and username">
+            AND B.ID = #{username}
+        </if>
+    </select>
+
+    <select id="selPersonById" parameterType="int" resultType="person">
+        SELECT A.*,
+               ID, Password, Email, Rank, EnterDt, Phone, DepartmentOID, DepartmentNm, IsUse, ImgSign, JobTitleOID, JobPositionOID, HiddenGuest, EmpNo, LastLogin, ItemOID, Nation, JobGroupOID, external_user
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPERSON B ON A.OID = B.OID
+        WHERE
+        A.TYPE = 'PERSON'
+        AND A.OID = #{oid}
+    </select>
+
+    <select id="selVerifyByFromId" parameterType="int" resultType="verify">
+        SELECT *
+        FROM T_DPERSON_VERIFY
+        WHERE FromOID = #{fromOID}
+    </select>
+
+    <update id="uptVerify" parameterType="verify">
+        UPDATE T_DPERSON_VERIFY
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="check2FA != null">
+                Check2FA = #{check2FA},
+            </if>
+            <if test="loginLock != null and loginLock != '' and loginLock">
+                LoginLock = #{loginLock},
+            </if>
+        </trim>
+        WHERE OID = #{oid}
+    </update>
+
+    <insert id="insVerify" parameterType="verify">
+        <selectKey resultType="int" keyProperty="oid" order="BEFORE">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPERSON_VERIFY
+        </selectKey>
+        INSERT INTO T_DPERSON_VERIFY
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            OID,
+            FromOID,
+            <if test="check2FA != null">Check2FA,</if>
+            <if test="loginLock != null and loginLock != ''">LoginLock,</if>
+        </trim>
+        <trim prefix="VALUES (" suffix=")" suffixOverrides=",">
+            #{oid},
+            #{fromOID},
+            <if test="check2FA != null">#{check2FA},</if>
+            <if test="loginLock != null and loginLock != ''">#{loginLock},</if>
+        </trim>
+    </insert>
+
+    <insert id="insPerson" parameterType="person">
+        INSERT INTO T_DPERSON
+        ( oid
+        , id
+        , password
+        , email
+        , rank
+        , enterDt
+        , phone
+        , departmentOID
+        , departmentNm
+        , isUse
+        , imgSign
+        , jobTitleOID
+        , jobPositionOID
+        , hiddenGuest
+        , nation
+        , jobGroupOID
+        , empNo
+        )
+        VALUES
+            ( #{oid}
+            , #{id}
+            , #{password}
+            , #{email}
+            , #{rank}
+            , #{enterDt}
+            , #{phone}
+            , #{departmentOID}
+            , #{departmentNm}
+            , #{isUse}
+            , #{imgSign}
+            , #{jobTitleOID}
+            , #{jobPositionOID}
+            , #{hiddenGuest}
+            , #{nation}
+            , #{jobGroupOID}
+            , #{empNo}
+            )
+    </insert>
+
+    <update id="udtPerson" parameterType="person">
+        UPDATE T_DPERSON
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="email != null and email != '' and email">
+                Email = #{email},
+            </if>
+            <if test="rank != null and rank != '' and rank">
+                Rank = #{rank},
+            </if>
+            <if test="enterDt != null and enterDt">
+                EnterDt = #{enterDt},
+            </if>
+            <if test="phone != null and phone != '' and phone">
+                Phone = #{phone},
+            </if>
+            <if test="departmentOID != null and departmentOID != '' and departmentOID">
+                DepartmentOID = #{departmentOID},
+            </if>
+            <if test="departmentNm != null and departmentNm != '' and departmentNm">
+                DepartmentNm = #{departmentNm},
+            </if>
+            <if test="isUse != null">
+                IsUse = #{isUse},
+            </if>
+            <if test="imgSign != null and imgSign != '' and imgSign">
+                ImgSign = #{imgSign},
+            </if>
+            <if test="jobTitleOID != null and jobTitleOID != '' and jobTitleOID">
+                JobTitleOID = #{jobTitleOID},
+            </if>
+            <if test="jobPositionOID != null and jobPositionOID != '' and jobPositionOID">
+                JobPositionOID = #{jobPositionOID},
+            </if>
+            <if test="hiddenGuest != null">
+                HiddenGuest = #{hiddenGuest},
+            </if>
+            <if test="lastLogin != null and lastLogin">
+                lastLogin = #{lastLogin},
+            </if>
+            <if test="nation != null and nation">
+                nation = #{nation},
+            </if>
+            <if test="jobGroupOID != null and jobGroupOID">
+                jobGroupOID = #{jobGroupOID},
+            </if>
+        </trim>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtPwPerson" parameterType="person">
+        UPDATE T_DPERSON SET 
+        Password = 'aNl+5iZqsVv4OZt+e5Ghdg=='
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtIpPwPerson" parameterType="person">
+        UPDATE T_DPERSON SET
+        Password = #{password}
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtPersonLastLogin" parameterType="person">
+        UPDATE T_DPERSON SET
+        LastLogin = GETDATE()
+        WHERE OID = #{oid}
+    </update>
+
+    <select id="selToken" parameterType="UserTokenDTO" resultType="UserTokenDTO">
+        SELECT *
+        FROM T_DTOKEN
+        WHERE 1 = 1
+        <if test="id != null and id != '' and id">
+            AND id = #{id}
+        </if>
+        <if test="existToken != null and existToken != '' and existToken">
+            AND existToken = #{existToken}
+        </if>
+    </select>
+
+    <select id="selTokenList" parameterType="UserTokenDTO" resultType="UserTokenDTO">
+        SELECT *
+        FROM T_DTOKEN
+        WHERE 1 = 1
+        <if test="id != null and id != '' and id">
+            AND id = #{id}
+        </if>
+        <if test="existToken != null and existToken != '' and existToken">
+            AND existToken = #{existToken}
+        </if>
+    </select>
+
+    <insert id="insToken" parameterType="UserTokenDTO" >
+        <selectKey statementType="PREPARED" resultType="int" keyProperty="oid" order="BEFORE">
+            SELECT ISNULL(MAX(oid),0) + 1 AS oid FROM T_DTOKEN
+        </selectKey>
+        INSERT INTO T_DTOKEN
+        (oid
+        , id
+        , grantType
+        , accessToken
+        , refreshToken
+        , existToken
+        )
+        VALUES
+        (#{oid}
+        , #{id}
+        , #{grantType}
+        , #{accessToken}
+        , #{refreshToken}
+        , #{existToken}
+        )
+    </insert>
+
+    <!-- 그룹 멤버 조회 -->
+    <select id="selectGroupMembers" resultType="Person" parameterType="java.lang.Long">
+        SELECT /* PersonDAO.selectGroupMembers */
+        #{grpUid} AS grpUid,
+        a.OID,
+        b.ID,
+        a.NAME,
+        b.IsUse,
+        b.EMAIL,
+        b.PHONE,
+        b.LastLogin,
+        b.DepartmentOID,
+        b.DepartmentNm,
+        b.JobTitleOID,
+        c.KorNm AS JobTitleNm,
+        b.JobPositionOID,
+        d.KorNm AS JobPositionNm
+        FROM T_DOBJECT a WITH(NOLOCK)
+        LEFT JOIN T_DPERSON b WITH(NOLOCK)
+        ON a.OID = b.OID
+        LEFT JOIN T_DLIBRARY c WITH(NOLOCK)
+        ON b.JobTitleOID = c.OID
+        LEFT JOIN T_DLIBRARY d WITH(NOLOCK)
+        ON b.JobPositionOID = d.OID
+        WHERE a.OID IN (
+        SELECT USER_UID
+        FROM ST_AUTH_GROUP_MEMBER
+        WHERE grp_uid = #{grpUid}
+        AND use_at = 'Y'
+        )
+    </select>
+
+</mapper>

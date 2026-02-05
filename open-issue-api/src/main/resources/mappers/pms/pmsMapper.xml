@@ -1,0 +1,1938 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.papsnet.openissue.biz.project.dao.PmsDAO">
+    <select id="selPmsProject" parameterType="PmsProject" resultType="PmsProject">
+        SELECT
+        A.*
+        , IsTemplate, ProjectType, EstStartDt, EstEndDt, EstDuration, ActStartDt, ActEndDt, ActDuration, WorkingDay, CalendarOID, Complete, Oem_Lib_OID, Car_Lib_OID, ITEM_No, ITEM_Middle, ProjectGrade, Customer_OID, ProductNm, TemplateOID, TemplateContent, EstDisposalDt, MassProdDt, DisconDt, Forecast, WrCreateStore, DevCost, MoldCost, EquipCost, TargetCost, SalesOrderOID, SalesOrderOBNO, IsSalesOrder
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        <where>
+            <if test="type != null">
+                AND A.Type = #{type}
+            </if>
+            <if test="bpolicyOID != null">
+                AND A.BPolicyOID = #{bpolicyOID}
+            </if>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="name != null">
+                AND A.Name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="description != null">
+                AND A.Description LIKE CONCAT('%',#{description},'%')
+            </if>
+            <if test="projectType != null">
+                AND B.ProjectType = #{projectType}
+            </if>
+            <if test="oemLibOID != null">
+                AND B.Oem_Lib_OID = #{oemLibOID}
+            </if>
+            <if test="carLibOID != null">
+                AND B.Car_Lib_OID = #{carLibOID}
+            </if>
+            <if test="isTemplate != null">
+                AND B.IsTemplate IS NOT NULL
+            </if>
+            <if test="isTemplate == null">
+                AND B.IsTemplate IS NULL
+            </if>
+            <if test="oids != null">
+                AND A.OID IN
+                <foreach collection="oids" separator="," item="id" open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="massProdDt != null">
+                AND B.MassProdDt &gt;= #{massProdDt}
+            </if>
+            <if test="disconDt != null">
+                AND B.DisconDt &lt;= #{disconDt}
+            </if>
+            <if test="isSalesOrder != null">
+                AND B.IsSalesOrder = #{isSalesOrder}
+            </if>
+            <if test="salesOrderOIDs != null">
+                AND B.SalesOrderOID IN
+                <foreach collection="salesOrderOIDs" item="sid" open="(" close=")" separator=",">
+                    #{sid}
+                </foreach>
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+        ORDER BY CASE WHEN B.ProjectGrade IS NULL THEN 1 ELSE 0 END, B.ProjectGrade
+        <if test='pageNum != null and pageCount != null'>
+            OFFSET ${(pageNum - 1) * pageCount} ROWS FETCH NEXT #{pageCount} ROWS ONLY
+        </if>
+    </select>
+
+    <select id="selPmsProjectCount" parameterType="PmsProject" resultType="int">
+        SELECT COUNT(1)
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        <where>
+            <if test="type != null">
+                AND A.Type = #{type}
+            </if>
+            <if test="bpolicyOID != null">
+                AND A.BPolicyOID = #{bpolicyOID}
+            </if>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="name != null">
+                AND A.Name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="description != null">
+                AND A.Description LIKE CONCAT('%',#{description},'%')
+            </if>
+            <if test="projectType != null">
+                AND B.ProjectType = #{projectType}
+            </if>
+            <if test="oemLibOID != null">
+                AND B.Oem_Lib_OID = #{oemLibOID}
+            </if>
+            <if test="carLibOID != null">
+                AND B.Car_Lib_OID = #{carLibOID}
+            </if>
+            <if test="isTemplate != null">
+                AND B.IsTemplate IS NOT NULL
+            </if>
+            <if test="isTemplate == null">
+                AND B.IsTemplate IS NULL
+            </if>
+            <if test="oids != null">
+                AND A.OID IN
+                <foreach collection="oids" separator="," item="id" open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="massProdDt != null">
+                AND B.MassProdDt &gt;= #{massProdDt}
+            </if>
+            <if test="disconDt != null">
+                AND B.DisconDt &lt;= #{disconDt}
+            </if>
+            <if test="isSalesOrder != null">
+                AND B.IsSalesOrder = #{isSalesOrder}
+            </if>
+            <if test="salesOrderOIDs != null">
+                AND B.SalesOrderOID IN
+                <foreach collection="salesOrderOIDs" item="sid" open="(" close=")" separator=",">
+                    #{sid}
+                </foreach>
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <select id="selPmsProjectObject" parameterType="PmsProject" resultType="PmsProject">
+        SELECT
+        A.*
+        , B.*
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        <where>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="type != null">
+                AND A.Type = #{type}
+            </if>
+            <if test="isTemplate != null">
+                AND B.IsTemplate IS NOT NULL
+            </if>
+            <if test="isTemplate == null">
+                AND B.IsTemplate IS NULL
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <select id="selPmsRelationship" parameterType="PmsRelationship" resultType="PmsRelationship">
+        SELECT *
+        FROM T_DPMS_RELATIONSHIP
+        <where>
+            <if test="fromOID != null" >
+                AND FromOID = #{fromOID}
+            </if>
+            <if test="toOID != null"  >
+                AND ToOID = #{toOID}
+            </if>
+            <if test="rootOID != null" >
+                AND RootOID = #{rootOID}
+            </if>
+            <if test="type != null">
+                AND Type = #{type}
+            </if>
+            <if test="roleOID != null" >
+                AND RoleOID = #{roleOID}
+            </if>
+            <if test="taskOID != null" >
+                AND TaskOID = #{taskOID}
+            </if>
+            <if test="fromOIDs != null" >
+                AND FromOID IN
+                <foreach collection="fromOIDs" item="fOid" open="(" close=")" separator=",">
+                    #{fOid}
+                </foreach>
+            </if>
+            <if test="toOIDs != null" >
+                AND ToOID IN
+                <foreach collection="toOIDs" item="tOid" open="(" close=")" separator=",">
+                    #{tOid}
+                </foreach>
+            </if>
+            <if test="rootOIDs != null" >
+                AND RootOID IN
+                <foreach collection="rootOIDs" item="rOid" open="(" close=")" separator=",">
+                    #{rOid}
+                </foreach>
+            </if>
+            AND DeleteDt IS NULL
+        </where>
+        ORDER BY Ord
+    </select>
+
+    <select id="selPmsProcess" parameterType="PmsProcess" resultType="PmsProcess">
+        SELECT
+        A.OID, Name, Type, Description, TableNm, BPolicyOID, TdmxOID, Thumbnail, Revision, IsLatest, IsReleasedLatest, CreateDt, CreateUs, ModifyDt, ModifyUs, DeleteDt, DeleteUs, GwDeptId, GwDeptCode, GwDeptIsUse
+        ,ProcessType, Id, Dependency, DependencyType, EstStartDt, EstEndDt, EstDuration, ActStartDt, ActEndDt, ActDuration, Level, Complete, No, IsSkipped
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPMS_PROCESS B ON A.OID = B.OID
+        <where>
+            <if test="type != null" >
+                AND A.Type = #{type}
+            </if>
+            <if test="tableNm != null" >
+                AND A.TableNm = #{tableNm}
+            </if>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="name != null">
+                AND A.Name LIKE CONCAT('%',#{name},'%')
+            </if>
+            <if test="description != null" >
+                AND A.Description LIKE CONCAT('%',#{description},'%')
+            </if>
+            <if test="processType != null" >
+                AND B.ProcessType = #{processType}
+            </if>
+            <if test="oids != null and oids.size() > 0" >
+                AND A.OID IN
+                <foreach open="(" close=")" separator="," collection="oids" item="listOid" >
+                    #{listOid}
+                </foreach>
+            </if>
+        </where>
+        AND A.DeleteDt IS NULL
+    </select>
+
+    <insert id="insPmsRelationship" parameterType="PmsRelationship">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_RELATIONSHIP
+        </selectKey>
+        INSERT INTO T_DPMS_RELATIONSHIP
+        ( OID
+        , FromOID
+        , ToOID
+        , RootOID
+        , Count
+        , Type
+        , Ord
+        , RoleOID
+        , TaskOID
+        , CheckListEtc
+        , CreateDt
+        , CreateUs )
+        VALUES
+        ( #{oid}
+        , #{fromOID}
+        , #{toOID}
+        , #{rootOID}
+        , #{count}
+        , #{type}
+        , #{ord}
+        , #{roleOID}
+        , #{taskOID}
+        , #{checkListEtc}
+        , GETDATE()
+        , #{createUs} )
+    </insert>
+
+    <insert id="insPmsRelationshipNotOrd" parameterType="PmsRelationship">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_RELATIONSHIP
+        </selectKey>
+        INSERT INTO T_DPMS_RELATIONSHIP
+        ( OID
+        , FromOID
+        , ToOID
+        , RootOID
+        , Count
+        , Type
+        , Ord
+        , RoleOID
+        , TaskOID
+        , CheckListEtc
+        , CreateDt
+        , CreateUs )
+        VALUES
+        ( #{oid}
+        , #{fromOID}
+        , #{toOID}
+        , #{rootOID}
+        , #{count}
+        , #{type}
+        , (SELECT ISNULL(MAX(Ord),0) + 1 AS OID FROM T_DPMS_RELATIONSHIP WHERE FromOID = #{fromOID} AND Type = #{type})
+        , #{roleOID}
+        , #{taskOID}
+        , #{checkListEtc}
+        , GETDATE()
+        , #{createUs} )
+    </insert>
+
+    <insert id="insPmsProject" parameterType="PmsProject">
+        INSERT INTO T_DPMS_PROJECT
+        ( OID
+        , IsTemplate
+        , ProjectType
+        , EstStartDt
+        , EstEndDt
+        , EstDuration
+        , ActStartDt
+        , ActEndDt
+        , ActDuration
+        , WorkingDay
+        , CalendarOID
+        , Complete
+        , Oem_Lib_OID
+        , Car_Lib_OID
+        , ITEM_No
+        , ITEM_Middle
+        , ProjectGrade
+        , Customer_OID
+        , ProductNm
+        , TemplateOID
+        , TemplateContent
+        , EstDisposalDt
+        , MassProdDt
+        , DisconDt
+        , DevCost
+        , MoldCost
+        , EquipCost
+        , TargetCost
+        , SalesOrderOID
+        , SalesOrderOBNO
+        , IsSalesOrder )
+        VALUES
+        ( #{oid}
+        , #{isTemplate}
+        , #{projectType}
+        , #{estStartDt}
+        , #{estEndDt}
+        , #{estDuration}
+        , #{actStartDt}
+        , #{actEndDt}
+        , #{actDuration}
+        , #{workingDay}
+        , #{calendarOID}
+        , #{complete}
+        , #{oemLibOID}
+        , #{carLibOID}
+        , #{itemNo}
+        , #{itemMiddle}
+        , #{projectGrade}
+        , #{customerOID}
+        , #{productNm}
+        , #{templateOID}
+        , #{templateContent}
+        , #{estDisposalDt}
+        , #{massProdDt}
+        , #{disconDt}
+        , #{devCost}
+        , #{moldCost}
+        , #{equipCost}
+        , #{targetCost}
+        , #{salesOrderOID}
+        , #{salesOrderOBNO}
+        , #{isSalesOrder} )
+    </insert>
+    <insert id="insPmsProcess" parameterType="PmsProcess">
+        INSERT INTO T_DPMS_PROCESS
+        ( OID
+        , ProcessType
+        , Id
+        , Dependency
+        , DependencyType
+        , EstStartDt
+        , EstEndDt
+        , EstDuration
+        , Level
+        , Complete )
+        VALUES
+        ( #{oid}
+        , #{processType}
+        , #{id}
+        , #{dependency}
+        , #{dependencyType}
+        , #{estStartDt}
+        , #{estEndDt}
+        , #{estDuration}
+        , #{level}
+        , #{complete} )
+    </insert>
+    <update id="udtPmsProject" parameterType="PmsProject">
+        UPDATE T_DPMS_PROJECT
+        <set>
+            <if test="projectType != null">ProjectType = #{projectType},</if>
+            <if test="isTemplate != null">IsTemplate = #{isTemplate},</if>
+            <if test="isSalesOrder != null">IsSalesOrder = #{isSalesOrder},</if>
+            <if test="estStartDt != null">EstStartDt = #{estStartDt},</if>
+            <if test="estEndDt != null">EstEndDt = #{estEndDt},</if>
+            <if test="estDuration != null">EstDuration = #{estDuration},</if>
+            <if test="actStartDt != null">ActStartDt = #{actStartDt},</if>
+            <if test="actEndDt != null">ActEndDt = #{actEndDt},</if>
+            <if test="actDuration != null">ActDuration = #{actDuration},</if>
+            <if test="workingDay != null">WorkingDay = #{workingDay},</if>
+            <if test="calendarOID != null">CalendarOID = #{calendarOID},</if>
+            <if test="complete != null">Complete = #{complete},</if>
+            <if test="templateContent != null">TemplateContent = #{templateContent},</if>
+            <if test="oemLibOID != null">Oem_Lib_OID = #{oemLibOID},</if>
+            <if test="carLibOID != null">Car_Lib_OID = #{carLibOID},</if>
+            <if test="itemNo != null">ITEM_No = #{itemNo},</if>
+            <if test="itemMiddle != null">ITEM_Middle = #{itemMiddle},</if>
+            <if test="projectGrade != null">ProjectGrade = #{projectGrade},</if>
+            <if test="customerOID != null">Customer_OID = #{customerOID},</if>
+            <if test="productNm != null">ProductNm = #{productNm},</if>
+            <if test="salesOrderOID != null">SalesOrderOID = #{salesOrderOID},</if>
+            <if test="salesOrderOBNO != null">SalesOrderOBNO = #{salesOrderOBNO},</if>
+            <if test="devCost != null">DevCost = #{devCost},</if>
+            <if test="moldCost != null">MoldCost = #{moldCost},</if>
+            <if test="equipCost != null">EquipCost = #{equipCost},</if>
+            <if test="targetCost != null">TargetCost = #{targetCost},</if>
+            <if test="progressRate != null">ProgressRate = #{progressRate},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtPmsGateSignOffProject" parameterType="PmsProject">
+        UPDATE T_DPMS_PROJECT
+        <set>
+            <if test="forecast != null">Forecast = #{forecast},</if>
+            <if test="wrCreateStore != null">WrCreateStore = #{wrCreateStore},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- ========================= -->
+    <!--           EPL             -->
+    <!-- ========================= -->
+    <select id="selEPL" parameterType="PmsEPL" resultType="PmsEPL">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_EPL B ON A.OID = B.OID
+        <where>
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="name != null">AND A.Name LIKE CONCAT('%',#{name},'%')</if>
+            <if test="projectOID != null">AND B.ProjectOID = #{projectOID}</if>
+            <if test="salesOrderOID != null">AND B.SalesOrderOID = #{salesOrderOID}</if>
+            <if test="obNO != null">AND B.OB_NO = #{obNO}</if>
+            <if test="changeOrderOID != null">AND B.ChangeOrderOID = #{changeOrderOID}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <select id="selEPLObject" parameterType="PmsEPL" resultType="PmsEPL">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_EPL B ON A.OID = B.OID
+        <where>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="projectOID != null">AND B.ProjectOID = #{projectOID}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <insert id="insEPL" parameterType="PmsEPL">
+        INSERT INTO T_DPMS_EPL
+        ( OID
+        , SalesOrderOID
+        , ProjectOID
+        , JsonContent
+        , JsonData
+        , DataRowCount
+        , SpecCount
+        , OB_NO
+        , RepPartNo )
+        VALUES
+        ( #{oid}
+        , #{salesOrderOID}
+        , #{projectOID}
+        , #{jsonContent}
+        , #{jsonData}
+        , #{dataRowCount}
+        , #{specCount}
+        , #{obNO}
+        , #{repPartNo} )
+    </insert>
+
+    <update id="udtEPL" parameterType="PmsEPL">
+        UPDATE T_DPMS_EPL
+        <set>
+            <if test="jsonContent != null">JsonContent = #{jsonContent},</if>
+            <if test="jsonData != null">JsonData = #{jsonData},</if>
+            <if test="dataRowCount != null">DataRowCount = #{dataRowCount},</if>
+            <if test="spec != null">Spec = #{spec},</if>
+            <if test="spec == null">Spec = NULL,</if>
+            <if test="specCount != null">SpecCount = #{specCount},</if>
+            <if test="obNO != null">OB_NO = #{obNO},</if>
+            <if test="repPartNo != null">RepPartNo = #{repPartNo},</if>
+        </set>
+        WHERE OID = #{oid}
+        <if test="projectOID != null">
+            AND ProjectOID = #{projectOID}
+        </if>
+    </update>
+
+    <update id="udtEPLProjectProgram" parameterType="PmsEPL">
+        UPDATE T_DPMS_EPL
+        SET ProjectOID = #{projectOID}
+        WHERE SalesOrderOID = #{salesOrderOID}
+    </update>
+
+    <!-- Items -->
+    <select id="selEPLItem" parameterType="PmsEPLItem" resultType="PmsEPLItem">
+        SELECT *
+        FROM T_DPMS_EPL_ITEM
+        <where>
+            <if test="oid != null">AND OID = #{oid}</if>
+            <if test="eplOID != null">AND EPLOID = #{eplOID}</if>
+            <if test="specOID != null">AND SpecOID = #{specOID}</if>
+            <if test="partNo != null">AND PartNo = #{partNo}</if>
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+            <if test="toOID != null">AND ToOID = #{toOID}</if>
+        </where>
+        ORDER BY ISNULL(Step,0), ISNULL(Ord,0), OID
+    </select>
+
+    <select id="selEPLItemObject" parameterType="PmsEPLItem" resultType="PmsEPLItem">
+        SELECT *
+        FROM T_DPMS_EPL_ITEM
+        <where>
+            <if test="oid != null">AND OID = #{oid}</if>
+        </where>
+    </select>
+
+    <select id="selEPLItemCheck" parameterType="PmsEPLItem" resultType="int">
+        SELECT COALESCE(MAX(CAST(SUBSTRING(TempPartNo, 10, LEN(TempPartNo)) AS INT)), 0) AS MaxTempPart
+        FROM T_DPMS_EPL_ITEM
+        <where>
+            <if test="tempPartNo != null">AND TempPartNo LIKE CONCAT('%', #{tempPartNo}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selByColumnNameEplItem" parameterType="PmsEPLItem" resultType="PmsEPLItem">
+        SELECT *
+        FROM T_DPMS_EPL_ITEM
+        WHERE 
+        $columnName$ IS NOT NULL
+        AND $columnName$ != ''
+        <if test="eplOID != null">
+            AND EPLOID = #{eplOID}
+        </if>
+        ORDER BY Row
+    </select>
+
+    <insert id="insEPLItem" parameterType="PmsEPLItem">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_EPL_ITEM
+        </selectKey>
+        INSERT INTO T_DPMS_EPL_ITEM
+        ( OID
+        , Row
+        , EPLOID
+        , SpecOID
+        , Step
+        , TempPartNo
+        , PartNo
+        , Revision
+        , PartNm
+        , Division
+        , Material
+        , Car
+        , Size
+        , Weight
+        , Unit
+        , Count
+        , TwoDimensional
+        , ThreeDimensional
+        , MSL
+        , AEC
+        , StartDt
+        , EndDt
+        , Reference
+        , Thumbnail
+        , Spec20
+        , Spec21
+        , Spec22
+        , Spec23
+        , Spec24
+        , Spec25
+        , Spec26
+        , Spec27
+        , Spec28
+        , Spec29
+        , Spec30
+        , Spec31
+        , Spec32
+        , Spec33
+        , Spec34
+        , Spec35
+        , Spec36
+        , Spec37
+        , Spec38
+        , Spec39
+        , Spec40
+        , Spec41
+        , Spec42
+        , Spec43
+        , Spec44
+        , Spec45
+        , Spec46
+        , Spec47
+        , Spec48
+        , Spec49
+        , Action )
+        VALUES
+        ( #{oid}
+        , #{row}
+        , #{eplOID}
+        , #{specOID}
+        , #{step}
+        , #{tempPartNo}
+        , #{partNo}
+        , #{revision}
+        , #{partNm}
+        , #{division}
+        , #{material}
+        , #{car}
+        , #{size}
+        , #{weight}
+        , #{unit}
+        , #{count}
+        , #{twoDimensional}
+        , #{threeDimensional}
+        , #{msl}
+        , #{aec}
+        , #{startDt}
+        , #{endDt}
+        , #{reference}
+        , #{thumbnail}
+        , #{spec20}
+        , #{spec21}
+        , #{spec22}
+        , #{spec23}
+        , #{spec24}
+        , #{spec25}
+        , #{spec26}
+        , #{spec27}
+        , #{spec28}
+        , #{spec29}
+        , #{spec30}
+        , #{spec31}
+        , #{spec32}
+        , #{spec33}
+        , #{spec34}
+        , #{spec35}
+        , #{spec36}
+        , #{spec37}
+        , #{spec38}
+        , #{spec39}
+        , #{spec40}
+        , #{spec41}
+        , #{spec42}
+        , #{spec43}
+        , #{spec44}
+        , #{spec45}
+        , #{spec46}
+        , #{spec47}
+        , #{spec48}
+        , #{spec49}
+        , #{action} )
+    </insert>
+
+    <update id="udtEPLItem" parameterType="PmsEPLItem">
+        UPDATE T_DPMS_EPL_ITEM
+        SET
+        Row = #{row}
+        , PartNo = #{partNo}
+        , Revision = #{revision}
+        , PartNm = #{partNm}
+        , Division = #{division}
+        , Material = #{material}
+        , Car = #{car}
+        , Size = #{size}
+        , Weight = #{weight}
+        , Unit = #{unit}
+        , Count = #{count}
+        , MSL = #{msl}
+        , AEC = #{aec}
+        , StartDt = #{startDt}
+        , EndDt = #{endDt}
+        , Reference = #{reference}
+        , Thumbnail = #{thumbnail}
+        , Step = #{step}
+        , Spec20 = #{spec20}
+        , Spec21 = #{spec21}
+        , Spec22 = #{spec22}
+        , Spec23 = #{spec23}
+        , Spec24 = #{spec24}
+        , Spec25 = #{spec25}
+        , Spec26 = #{spec26}
+        , Spec27 = #{spec27}
+        , Spec28 = #{spec28}
+        , Spec29 = #{spec29}
+        , Spec30 = #{spec30}
+        , Spec31 = #{spec31}
+        , Spec32 = #{spec32}
+        , Spec33 = #{spec33}
+        , Spec34 = #{spec34}
+        , Spec35 = #{spec35}
+        , Spec36 = #{spec36}
+        , Spec37 = #{spec37}
+        , Spec38 = #{spec38}
+        , Spec39 = #{spec39}
+        , Spec40 = #{spec40}
+        , Spec41 = #{spec41}
+        , Spec42 = #{spec42}
+        , Spec43 = #{spec43}
+        , Spec44 = #{spec44}
+        , Spec45 = #{spec45}
+        , Spec46 = #{spec46}
+        , Spec47 = #{spec47}
+        , Spec48 = #{spec48}
+        , Spec49 = #{spec49}
+        , TwoDimensional = #{twoDimensional}
+        , ThreeDimensional = #{threeDimensional}
+        <if test="action != null">
+            , Action = #{action}
+        </if>
+        WHERE 1 = 1
+        <if test="oid != null">
+            AND OID = #{oid}
+        </if>
+        <if test="eplOID != null">
+            AND EPLOID = #{eplOID}
+        </if>
+        <if test="partNo != null">
+            AND PartNo = #{partNo}
+        </if>
+        <if test="tempPartNo != null">
+            AND TempPartNo = #{tempPartNo}
+        </if>
+    </update>
+
+    <update id="udtEPLItemRow" parameterType="PmsEPLItem">
+        UPDATE T_DPMS_EPL_ITEM
+        SET
+        Row = #{row}
+        <if test="action != null">
+            , Action = #{action}
+        </if>
+        WHERE 1 = 1
+        <if test="oid != null">
+            AND OID = #{oid}
+        </if>
+        <if test="eplOID != null">
+            AND EPLOID = #{eplOID}
+        </if>
+        <if test="tempPartNo != null">
+            AND TempPartNo = #{tempPartNo}
+        </if>
+    </update>
+
+    <update id="udtEPLItemFile" parameterType="PmsEPLItem">
+        UPDATE T_DPMS_EPL_ITEM
+        <set>
+            <if test="twoDimensional != null">TwoDimensional = #{twoDimensional},</if>
+            <if test="threeDimensional != null">ThreeDimensional = #{threeDimensional},</if>
+            <if test="action != null">Action = #{action},</if>
+        </set>
+        WHERE 1 = 1
+        <if test="oid != null">
+            AND OID = #{oid}
+        </if>
+        <if test="eplOID != null">
+            AND EPLOID = #{eplOID}
+        </if>
+        <if test="tempPartNo != null">
+            AND TempPartNo = #{tempPartNo}
+        </if>
+    </update>
+
+    <delete id="delEPLItem" parameterType="PmsEPLItem">
+        DELETE FROM T_DPMS_EPL_ITEM
+        WHERE EPLOID = #{eplOID}
+        <if test="oid != null">AND OID = #{oid}</if>
+    </delete>
+
+    <!-- Spec -->
+    <select id="selEPLSpecObject" parameterType="PmsEPLSpec" resultType="PmsEPLSpec">
+        SELECT *
+        FROM T_DPMS_EPL_SPEC
+        <where>
+            <if test="oid != null">AND OID = #{oid}</if>
+            <if test="eplOID != null">AND EPLOID = #{eplOID}</if>
+        </where>
+    </select>
+
+    <select id="selEPLSpec" parameterType="PmsEPLSpec" resultType="PmsEPLSpec">
+        SELECT *
+        FROM T_DPMS_EPL_SPEC
+        WHERE EPLOID = #{eplOID}
+    </select>
+
+    <insert id="insEPLSpec" parameterType="PmsEPLSpec">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_EPL_SPEC
+        </selectKey>
+        INSERT INTO T_DPMS_EPL_SPEC
+        ( OID
+        , EPLOID
+        , Option20, Estimator20, Part20
+        , Option21, Estimator21, Part21
+        , Option22, Estimator22, Part22
+        , Option23, Estimator23, Part23
+        , Option24, Estimator24, Part24
+        , Option25, Estimator25, Part25
+        , Option26, Estimator26, Part26
+        , Option27, Estimator27, Part27
+        , Option28, Estimator28, Part28
+        , Option29, Estimator29, Part29
+        , Option30, Estimator30, Part30
+        , Option31, Estimator31, Part31
+        , Option32, Estimator32, Part32
+        , Option33, Estimator33, Part33
+        , Option34, Estimator34, Part34
+        , Option35, Estimator35, Part35
+        , Option36, Estimator36, Part36
+        , Option37, Estimator37, Part37
+        , Option38, Estimator38, Part38
+        , Option39, Estimator39, Part39
+        , Option40, Estimator40, Part40
+        , Option41, Estimator41, Part41
+        , Option42, Estimator42, Part42
+        , Option43, Estimator43, Part43
+        , Option44, Estimator44, Part44
+        , Option45, Estimator45, Part45
+        , Option46, Estimator46, Part46
+        , Option47, Estimator47, Part47
+        , Option48, Estimator48, Part48
+        , Option49, Estimator49, Part49
+        , SelPart20, SelPart21, SelPart22, SelPart23, SelPart24, SelPart25, SelPart26, SelPart27, SelPart28, SelPart29
+        , SelPart30, SelPart31, SelPart32, SelPart33, SelPart34, SelPart35, SelPart36, SelPart37, SelPart38, SelPart39
+        , SelPart40, SelPart41, SelPart42, SelPart43, SelPart44, SelPart45, SelPart46, SelPart47, SelPart48, SelPart49
+        , Standard20, Standard21, Standard22, Standard23, Standard24, Standard25, Standard26, Standard27, Standard28, Standard29
+        , Standard30, Standard31, Standard32, Standard33, Standard34, Standard35, Standard36, Standard37, Standard38, Standard39
+        , Standard40, Standard41, Standard42, Standard43, Standard44, Standard45, Standard46, Standard47, Standard48, Standard49 )
+        VALUES
+        ( #{oid}
+        , #{eplOID}
+        , #{option20}, #{estimator20}, #{part20}
+        , #{option21}, #{estimator21}, #{part21}
+        , #{option22}, #{estimator22}, #{part22}
+        , #{option23}, #{estimator23}, #{part23}
+        , #{option24}, #{estimator24}, #{part24}
+        , #{option25}, #{estimator25}, #{part25}
+        , #{option26}, #{estimator26}, #{part26}
+        , #{option27}, #{estimator27}, #{part27}
+        , #{option28}, #{estimator28}, #{part28}
+        , #{option29}, #{estimator29}, #{part29}
+        , #{option30}, #{estimator30}, #{part30}
+        , #{option31}, #{estimator31}, #{part31}
+        , #{option32}, #{estimator32}, #{part32}
+        , #{option33}, #{estimator33}, #{part33}
+        , #{option34}, #{estimator34}, #{part34}
+        , #{option35}, #{estimator35}, #{part35}
+        , #{option36}, #{estimator36}, #{part36}
+        , #{option37}, #{estimator37}, #{part37}
+        , #{option38}, #{estimator38}, #{part38}
+        , #{option39}, #{estimator39}, #{part39}
+        , #{option40}, #{estimator40}, #{part40}
+        , #{option41}, #{estimator41}, #{part41}
+        , #{option42}, #{estimator42}, #{part42}
+        , #{option43}, #{estimator43}, #{part43}
+        , #{option44}, #{estimator44}, #{part44}
+        , #{option45}, #{estimator45}, #{part45}
+        , #{option46}, #{estimator46}, #{part46}
+        , #{option47}, #{estimator47}, #{part47}
+        , #{option48}, #{estimator48}, #{part48}
+        , #{option49}, #{estimator49}, #{part49}
+        , #{selPart20}, #{selPart21}, #{selPart22}, #{selPart23}, #{selPart24}, #{selPart25}, #{selPart26}, #{selPart27}, #{selPart28}, #{selPart29}
+        , #{selPart30}, #{selPart31}, #{selPart32}, #{selPart33}, #{selPart34}, #{selPart35}, #{selPart36}, #{selPart37}, #{selPart38}, #{selPart39}
+        , #{selPart40}, #{selPart41}, #{selPart42}, #{selPart43}, #{selPart44}, #{selPart45}, #{selPart46}, #{selPart47}, #{selPart48}, #{selPart49}
+        , #{standard20}, #{standard21}, #{standard22}, #{standard23}, #{standard24}, #{standard25}, #{standard26}, #{standard27}, #{standard28}, #{standard29}
+        , #{standard30}, #{standard31}, #{standard32}, #{standard33}, #{standard34}, #{standard35}, #{standard36}, #{standard37}, #{standard38}, #{standard39}
+        , #{standard40}, #{standard41}, #{standard42}, #{standard43}, #{standard44}, #{standard45}, #{standard46}, #{standard47}, #{standard48}, #{standard49} )
+    </insert>
+
+    <update id="udtEPLSpec" parameterType="PmsEPLSpec">
+        UPDATE T_DPMS_EPL_SPEC SET
+        Option20 = #{option20}
+        , Estimator20 = #{estimator20}
+        , Part20 = #{part20}
+        , Option21 = #{option21}
+        , Estimator21 = #{estimator21}
+        , Part21 = #{part21}
+        , Option22 = #{option22}
+        , Estimator22 = #{estimator22}
+        , Part22 = #{part22}
+        , Option23 = #{option23}
+        , Estimator23 = #{estimator23}
+        , Part23 = #{part23}
+        , Option24 = #{option24}
+        , Estimator24 = #{estimator24}
+        , Part24 = #{part24}
+        , Option25 = #{option25}
+        , Estimator25 = #{estimator25}
+        , Part25 = #{part25}
+        , Option26 = #{option26}
+        , Estimator26 = #{estimator26}
+        , Part26 = #{part26}
+        , Option27 = #{option27}
+        , Estimator27 = #{estimator27}
+        , Part27 = #{part27}
+        , Option28 = #{option28}
+        , Estimator28 = #{estimator28}
+        , Part28 = #{part28}
+        , Option29 = #{option29}
+        , Estimator29 = #{estimator29}
+        , Part29 = #{part29}
+        , Option30 = #{option30}
+        , Estimator30 = #{estimator30}
+        , Part30 = #{part30}
+        , Option31 = #{option31}
+        , Estimator31 = #{estimator31}
+        , Part31 = #{part31}
+        , Option32 = #{option32}
+        , Estimator32 = #{estimator32}
+        , Part32 = #{part32}
+        , Option33 = #{option33}
+        , Estimator33 = #{estimator33}
+        , Part33 = #{part33}
+        , Option34 = #{option34}
+        , Estimator34 = #{estimator34}
+        , Part34 = #{part34}
+        , Option35 = #{option35}
+        , Estimator35 = #{estimator35}
+        , Part35 = #{part35}
+        , Option36 = #{option36}
+        , Estimator36 = #{estimator36}
+        , Part36 = #{part36}
+        , Option37 = #{option37}
+        , Estimator37 = #{estimator37}
+        , Part37 = #{part37}
+        , Option38 = #{option38}
+        , Estimator38 = #{estimator38}
+        , Part38 = #{part38}
+        , Option39 = #{option39}
+        , Estimator39 = #{estimator39}
+        , Part39 = #{part39}
+        , Option40 = #{option40}
+        , Estimator40 = #{estimator40}
+        , Part40 = #{part40}
+        , Option41 = #{option41}
+        , Estimator41 = #{estimator41}
+        , Part41 = #{part41}
+        , Option42 = #{option42}
+        , Estimator42 = #{estimator42}
+        , Part42 = #{part42}
+        , Option43 = #{option43}
+        , Estimator43 = #{estimator43}
+        , Part43 = #{part43}
+        , Option44 = #{option44}
+        , Estimator44 = #{estimator44}
+        , Part44 = #{part44}
+        , Option45 = #{option45}
+        , Estimator45 = #{estimator45}
+        , Part45 = #{part45}
+        , Option46 = #{option46}
+        , Estimator46 = #{estimator46}
+        , Part46 = #{part46}
+        , Option47 = #{option47}
+        , Estimator47 = #{estimator47}
+        , Part47 = #{part47}
+        , Option48 = #{option48}
+        , Estimator48 = #{estimator48}
+        , Part48 = #{part48}
+        , Option49 = #{option49}
+        , Estimator49 = #{estimator49}
+        , Part49 = #{part49}
+        , SelPart20 = #{selPart20}
+        , SelPart21 = #{selPart21}
+        , SelPart22 = #{selPart22}
+        , SelPart23 = #{selPart23}
+        , SelPart24 = #{selPart24}
+        , SelPart25 = #{selPart25}
+        , SelPart26 = #{selPart26}
+        , SelPart27 = #{selPart27}
+        , SelPart28 = #{selPart28}
+        , SelPart29 = #{selPart29}
+        , SelPart30 = #{selPart30}
+        , SelPart31 = #{selPart31}
+        , SelPart32 = #{selPart32}
+        , SelPart33 = #{selPart33}
+        , SelPart34 = #{selPart34}
+        , SelPart35 = #{selPart35}
+        , SelPart36 = #{selPart36}
+        , SelPart37 = #{selPart37}
+        , SelPart38 = #{selPart38}
+        , SelPart39 = #{selPart39}
+        , SelPart40 = #{selPart40}
+        , SelPart41 = #{selPart41}
+        , SelPart42 = #{selPart42}
+        , SelPart43 = #{selPart43}
+        , SelPart44 = #{selPart44}
+        , SelPart45 = #{selPart45}
+        , SelPart46 = #{selPart46}
+        , SelPart47 = #{selPart47}
+        , SelPart48 = #{selPart48}
+        , SelPart49 = #{selPart49}
+        , Standard20 = #{standard20}
+        , Standard21 = #{standard21}
+        , Standard22 = #{standard22}
+        , Standard23 = #{standard23}
+        , Standard24 = #{standard24}
+        , Standard25 = #{standard25}
+        , Standard26 = #{standard26}
+        , Standard27 = #{standard27}
+        , Standard28 = #{standard28}
+        , Standard29 = #{standard29}
+        , Standard30 = #{standard30}
+        , Standard31 = #{standard31}
+        , Standard32 = #{standard32}
+        , Standard33 = #{standard33}
+        , Standard34 = #{standard34}
+        , Standard35 = #{standard35}
+        , Standard36 = #{standard36}
+        , Standard37 = #{standard37}
+        , Standard38 = #{standard38}
+        , Standard39 = #{standard39}
+        , Standard40 = #{standard40}
+        , Standard41 = #{standard41}
+        , Standard42 = #{standard42}
+        , Standard43 = #{standard43}
+        , Standard44 = #{standard44}
+        , Standard45 = #{standard45}
+        , Standard46 = #{standard46}
+        , Standard47 = #{standard47}
+        , Standard48 = #{standard48}
+        , Standard49 = #{standard49}
+        WHERE EPLOID = #{eplOID}
+    </update>
+
+    <select id="selEPLSpecEstimatorNumber" parameterType="PmsEPLSpec" resultType="PmsEPLSpec">
+        SELECT
+        OID,
+        EPLOID,
+        CAST(SUBSTRING(col, 10, 2) AS INT) AS estimatorNumber
+        FROM T_DPMS_EPL_SPEC
+        UNPIVOT (
+            EstimatorValue FOR col IN (
+                Estimator20, Estimator21, Estimator22, Estimator23,
+                Estimator24, Estimator25, Estimator26, Estimator27,
+                Estimator28, Estimator29, Estimator30, Estimator31,
+                Estimator32, Estimator33, Estimator34, Estimator35,
+                Estimator36, Estimator37, Estimator38, Estimator39,
+                Estimator40, Estimator41, Estimator42, Estimator43,
+                Estimator44, Estimator45, Estimator46, Estimator47,
+                Estimator48, Estimator49
+            )
+        ) AS unpvt
+        WHERE EstimatorValue = 'True'
+        <if test="eplOID != null">
+            AND EPLOID = #{eplOID}
+        </if>
+    </select>
+
+
+    <!-- ========================= -->
+    <!--        Reliability        -->
+    <!-- ========================= -->
+    <select id="selPmsReliability" parameterType="PmsReliability" resultType="PmsReliability">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPMS_RELIABILITY_FROM B ON A.OID = B.OID
+        <where>
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="name != null">AND A.Name LIKE CONCAT('%',#{name},'%')</if>
+            <if test="oids != null and oids.size > 0">
+                AND A.OID IN
+                <foreach collection="oids" item="id" open="(" separator="," close=")">#{id}</foreach>
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <select id="selPmsReliabilityObject" parameterType="PmsReliability" resultType="PmsReliability">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPMS_RELIABILITY_FROM B ON A.OID = B.OID
+        <where>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <insert id="insPmsReliability" parameterType="PmsReliability">
+        INSERT INTO T_DPMS_RELIABILITY_FROM
+        ( OID
+        , RequiredSchedule
+        , DevStep
+        , TestStandard
+        , RegNum
+        , PartNo
+        , CarType
+        , TestMethodDt
+        , NewVer
+        , HWVer
+        , SWVer
+        , CANVer
+        , TestApplyVer
+        , TestCarType
+        , TestPurpose
+        , TestContents
+        , SampleQuantity
+        , TestStandardContents
+        , Requirements )
+        VALUES
+        ( #{oid}
+        , #{requiredSchedule}
+        , #{devStep}
+        , #{testStandard}
+        , #{regNum}
+        , #{partNo}
+        , #{carType}
+        , #{testMethodDt}
+        , #{newVer}
+        , #{hWVer}
+        , #{sWVer}
+        , #{cANVer}
+        , #{testApplyVer}
+        , #{testCarType}
+        , #{testPurpose}
+        , #{testContents}
+        , #{sampleQuantity}
+        , #{testStandardContents}
+        , #{requirements} )
+    </insert>
+
+    <update id="udtPmsReliability" parameterType="PmsReliability">
+        UPDATE T_DPMS_RELIABILITY_FROM
+        <set>
+            <if test="requiredSchedule != null">RequiredSchedule = #{requiredSchedule},</if>
+            <if test="devStep != null">DevStep = #{devStep},</if>
+            <if test="testStandard != null">TestStandard = #{testStandard},</if>
+            <if test="regNum != null">RegNum = #{regNum},</if>
+            <if test="testMethodDt != null">TestMethodDt = #{testMethodDt},</if>
+            <if test="newVer != null">NewVer = #{newVer},</if>
+            <if test="hWVer != null">HWVer = #{hWVer},</if>
+            <if test="sWVer != null">SWVer = #{sWVer},</if>
+            <if test="cANVer != null">CANVer = #{cANVer},</if>
+            <if test="testApplyVer != null">TestApplyVer = #{testApplyVer},</if>
+            <if test="testCarType != null">TestCarType = #{testCarType},</if>
+            <if test="testPurpose != null">TestPurpose = #{testPurpose},</if>
+            <if test="testContents != null">TestContents = #{testContents},</if>
+            <if test="sampleQuantity != null">SampleQuantity = #{sampleQuantity},</if>
+            <if test="testStandardContents != null">TestStandardContents = #{testStandardContents},</if>
+            <if test="requirements != null">Requirements = #{requirements},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- ========================= -->
+    <!--     Reliability Report    -->
+    <!-- ========================= -->
+    <select id="selPmsReliabilityReport" parameterType="PmsReliabilityReport" resultType="PmsReliabilityReport">
+        SELECT
+        A.*
+        , B.*
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPMS_RELIABILITY_REPORT B ON A.OID = B.OID
+        <where>
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="name != null">AND A.Name LIKE CONCAT('%',#{name},'%')</if>
+            <if test="rootOID != null">AND B.RootOID = #{rootOID}</if>
+            <if test="devStep != null">AND B.DevStep = #{devStep}</if>
+            <if test="fromOID != null">AND B.FromOID = #{fromOID}</if>
+            <if test="createDt != null">AND A.CreateDt = #{createDt}</if>
+            <if test="oids != null and oids.size > 0">
+                AND A.OID IN
+                <foreach collection="oids" item="id" open="(" separator="," close=")">#{id}</foreach>
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <select id="selPmsReliabilityReportObject" parameterType="PmsReliabilityReport" resultType="PmsReliabilityReport">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPMS_RELIABILITY_REPORT B ON A.OID = B.OID
+        <where>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <insert id="insPmsReliabilityReport" parameterType="PmsReliabilityReport">
+        INSERT INTO T_DPMS_RELIABILITY_REPORT
+        ( OID
+        , DevStep
+        , TotalTestItem
+        , WaitingNum
+        , ProgressNum
+        , CompleteNum
+        , NGNum
+        , PartNm
+        , TotalTestStartDt
+        , TotalTestEndDt
+        , TestPurpose
+        , FromOID
+        , RootOID )
+        VALUES
+        ( #{oid}
+        , #{devStep}
+        , #{totalTestItem}
+        , #{waitingNum}
+        , #{progressNum}
+        , #{completeNum}
+        , #{nGNum}
+        , #{partNm}
+        , #{totalTestStartDt}
+        , #{totalTestEndDt}
+        , #{testPurpose}
+        , #{fromOID}
+        , #{rootOID} )
+    </insert>
+
+    <update id="udtPmsReliabilityReport" parameterType="PmsReliabilityReport">
+        UPDATE T_DPMS_RELIABILITY_REPORT
+        <set>
+            <if test="devStep != null">DevStep = #{devStep},</if>
+            <if test="testPurpose != null">TestPurpose = #{testPurpose},</if>
+            <if test="totalTestItem != null">TotalTestItem = #{totalTestItem},</if>
+            <if test="waitingNum != null">WaitingNum = #{waitingNum},</if>
+            <if test="progressNum != null">ProgressNum = #{progressNum},</if>
+            <if test="completeNum != null">CompleteNum = #{completeNum},</if>
+            <if test="totalTestStartDt != null">TotalTestStartDt = #{totalTestStartDt},</if>
+            <if test="totalTestEndDt != null">TotalTestEndDt = #{totalTestEndDt},</if>
+            <if test="nGNum != null">NGNum = #{nGNum},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- Reliability Test Item List -->
+    <insert id="insPmsReliabilityItemList" parameterType="PmsReliabilityItemList">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_RELIABILITY_TESTITEMLIST
+        </selectKey>
+        INSERT INTO T_DPMS_RELIABILITY_TESTITEMLIST
+        ( OID
+        , FromOID
+        , TestItemNm
+        , TestStandardNo
+        , TestCondition
+        , Sample
+        , ETC )
+        VALUES
+        ( #{oid}
+        , #{fromOID}
+        , #{testItemNm}
+        , #{testStandardNo}
+        , #{testCondition}
+        , #{sample}
+        , #{etc} )
+    </insert>
+
+    <select id="selPmsReliabilityItemList" parameterType="PmsReliabilityItemList" resultType="PmsReliabilityItemList">
+        SELECT *
+        FROM T_DPMS_RELIABILITY_TESTITEMLIST
+        <where>
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+        </where>
+    </select>
+
+    <delete id="delTestItemList" parameterType="PmsReliabilityItemList">
+        DELETE FROM T_DPMS_RELIABILITY_TESTITEMLIST
+        WHERE FromOID = #{fromOID}
+    </delete>
+
+    <!-- Reliability Report Test Item List -->
+    <insert id="insPmsReliabilityReportItemList" parameterType="PmsReliabilityReportItemList">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_RELIABILITY_REPORT_TESTITEMLIST
+        </selectKey>
+        INSERT INTO T_DPMS_RELIABILITY_REPORT_TESTITEMLIST
+        ( OID
+        , FromOID
+        , TestItemNm
+        , EstStartDt
+        , EstEndDt
+        , ActStartDt
+        , ActEndDt
+        , ProgressResult
+        , ETC )
+        VALUES
+        ( #{oid}
+        , #{fromOID}
+        , #{testItemNm}
+        , #{estStartDt}
+        , #{estEndDt}
+        , #{actStartDt}
+        , #{actEndDt}
+        , #{progressResult}
+        , #{etc} )
+    </insert>
+
+    <select id="selPmsReliabilityReportItemList" parameterType="PmsReliabilityReportItemList" resultType="PmsReliabilityReportItemList">
+        SELECT *
+        FROM T_DPMS_RELIABILITY_REPORT_TESTITEMLIST
+        <where>
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+        </where>
+    </select>
+
+    <delete id="delReportTestItemList" parameterType="PmsReliabilityReportItemList">
+        DELETE FROM T_DPMS_RELIABILITY_REPORT_TESTITEMLIST
+        WHERE FromOID = #{fromOID}
+    </delete>
+
+    <!-- ========================= -->
+    <!--            Gate           -->
+    <!-- ========================= -->
+    <select id="selPmsGateMetting" parameterType="PmsGateMetting" resultType="PmsGateMetting">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_GATE_METTING B ON A.OID = B.OID
+        <where>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="rootOID != null">AND B.RootOID = #{rootOID}</if>
+            <if test="fromOID != null">AND B.FromOID = #{fromOID}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+        ORDER BY A.CreateDt DESC
+    </select>
+
+    <select id="selPmsGateMettingObject" parameterType="PmsGateMetting" resultType="PmsGateMetting">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_GATE_METTING B ON A.OID = B.OID
+        <where>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <select id="selPmsGateSignOff" parameterType="PmsGateSignOff" resultType="PmsGateSignOff">
+        SELECT *
+        FROM T_DPMS_GATE_SIGNOFF
+        <where>
+            <if test="oid != null">AND OID = #{oid}</if>
+            <if test="rootOID != null">AND RootOID = #{rootOID}</if>
+        </where>
+    </select>
+
+    <insert id="insPmsGateSignOff" parameterType="PmsGateSignOff">
+        INSERT INTO T_DPMS_GATE_SIGNOFF
+        ( OID
+        , Forecast
+        , WrCreateStore
+        , CalendarEtc
+        , NonCompleteIssue
+        , SummaryEtc
+        , DevCost
+        , MoldCost
+        , EquipCost
+        , CreateDt
+        , CreateUs )
+        VALUES
+        ( #{oid}
+        , #{forecast}
+        , #{wrCreateStore}
+        , #{calendarEtc}
+        , #{nonCompleteIssue}
+        , #{summaryEtc}
+        , #{devCost}
+        , #{moldCost}
+        , #{equipCost}
+        , GETDATE()
+        , #{createUs} )
+    </insert>
+
+    <update id="udtPmsGateSignOff" parameterType="PmsGateSignOff">
+        UPDATE T_DPMS_GATE_SIGNOFF
+        <set>
+            <if test="forecast != null">Forecast = #{forecast},</if>
+            <if test="wrCreateStore != null">WrCreateStore = #{wrCreateStore},</if>
+            <if test="calendarEtc != null">CalendarEtc = #{calendarEtc},</if>
+            <if test="nonCompleteIssue != null">NonCompleteIssue = #{nonCompleteIssue},</if>
+            <if test="summaryEtc != null">SummaryEtc = #{summaryEtc},</if>
+            <if test="devCost != null">DevCost = #{devCost},</if>
+            <if test="moldCost != null">MoldCost = #{moldCost},</if>
+            <if test="equipCost != null">EquipCost = #{equipCost},</if>
+            <if test="modifyUs != null">ModifyUs = #{modifyUs},</if>
+            ModifyDt = GETDATE(),
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- SignOff Cost -->
+    <insert id="insPmsGateSignOffCost" parameterType="PmsGateSignOffCost">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_TARGETCOST
+        </selectKey>
+        INSERT INTO T_DPMS_TARGETCOST
+        ( OID, ProjectOID, Account, Program, Amount, Ratio, Description )
+        VALUES
+        ( #{oid}, #{projectOID}, #{account}, #{program}, #{amount}, #{ratio}, #{description} )
+    </insert>
+
+    <select id="selPmsGateSignOffCost" parameterType="PmsGateSignOffCost" resultType="PmsGateSignOffCost">
+        SELECT *
+        FROM T_DPMS_TARGETCOST
+        WHERE DeleteDt IS NULL
+        AND ProjectOID = #{projectOID}
+        <if test="account != null">AND Account = #{account}</if>
+        <if test="program != null">AND Program = #{program}</if>
+    </select>
+
+    <select id="selPmsGateSignOffCostObject" parameterType="PmsGateSignOffCost" resultType="PmsGateSignOffCost">
+        SELECT *
+        FROM T_DPMS_TARGETCOST
+        WHERE DeleteDt IS NULL
+        <if test="oid != null">AND OID = #{oid}</if>
+    </select>
+
+    <update id="delPmsGateSignOffCost" parameterType="PmsGateSignOffCost">
+        UPDATE T_DPMS_TARGETCOST
+        SET DeleteDt = GETDATE(), DeleteUs = #{deleteUs}
+        WHERE OID = #{oid}
+    </update>
+
+    
+    <!-- Additional Relationship Maintenance -->
+    <update id="delPmsRelationship" parameterType="PmsRelationship">
+        UPDATE T_DPMS_RELATIONSHIP
+        SET DeleteDt = GETDATE(), DeleteUs = #{deleteUs}
+        WHERE Type = #{type}
+        AND OID = #{oid}
+    </update>
+
+    <update id="pmsMemberReset" parameterType="PmsRelationship">
+        UPDATE T_DPMS_RELATIONSHIP
+        SET DeleteDt = GETDATE(), DeleteUs = #{deleteUs}
+        WHERE Type = #{type}
+        AND RootOID = #{rootOID}
+        AND FromOID != #{fromOID}
+    </update>
+
+    <update id="delPmsRelationshipByData" parameterType="PmsRelationship">
+        UPDATE T_DPMS_RELATIONSHIP
+        SET DeleteDt = GETDATE(), DeleteUs = #{deleteUs}
+        <where>
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+            <if test="toOID != null">AND ToOID = #{toOID}</if>
+            <if test="rootOID != null">AND RootOID = #{rootOID}</if>
+            <if test="type != null">AND Type = #{type}</if>
+            <if test="oid != null">AND OID = #{oid}</if>
+        </where>
+    </update>
+
+    <update id="udtPmsRelationship" parameterType="PmsRelationship">
+        UPDATE T_DPMS_RELATIONSHIP
+        <set>
+            <if test="ord != null">Ord = #{ord},</if>
+            <if test="rootOID != null">RootOID = #{rootOID},</if>
+            <if test="fromOID != null">FromOID = #{fromOID},</if>
+            <if test="toOID != null">ToOID = #{toOID},</if>
+            <if test="roleOID != null">RoleOID = #{roleOID},</if>
+            <if test="type != null">Type = #{type},</if>
+            <if test="taskOID != null">TaskOID = #{taskOID},</if>
+            <if test="checkListEtc != null">CheckListEtc = #{checkListEtc},</if>
+            <if test="description != null">Description = #{description},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtPmsRelationshipByToOID" parameterType="PmsRelationship">
+        UPDATE T_DPMS_RELATIONSHIP
+        <set>
+            <if test="ord != null">Ord = #{ord},</if>
+            <if test="rootOID != null">RootOID = #{rootOID},</if>
+            <if test="fromOID != null">FromOID = #{fromOID},</if>
+            <if test="toOID != null">ToOID = #{toOID},</if>
+            <if test="type != null">Type = #{type},</if>
+            <if test="taskOID != null">TaskOID = #{taskOID},</if>
+        </set>
+        WHERE ToOID = #{toOID}
+    </update>
+
+    <select id="selPmsDocRelationship" parameterType="PmsRelationship" resultType="PmsRelationship">
+        SELECT *
+        FROM T_DPMS_RELATIONSHIP
+        <where>
+            AND (Type = 'DOC_CLASS' OR Type = 'DOC_MASTER')
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+            <if test="toOID != null">AND ToOID = #{toOID}</if>
+            <if test="rootOID != null">AND RootOID = #{rootOID}</if>
+            <if test="roleOID != null">AND RoleOID = #{roleOID}</if>
+            <if test="taskOID != null">AND TaskOID = #{taskOID}</if>
+            AND DeleteDt IS NULL
+        </where>
+        ORDER BY Ord
+    </select>
+
+    <select id="selPmsRelationshipTaskIsNull" parameterType="PmsRelationship" resultType="PmsRelationship">
+        SELECT *
+        FROM T_DPMS_RELATIONSHIP
+        <where>
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+            <if test="toOID != null">AND ToOID = #{toOID}</if>
+            <if test="rootOID != null">AND RootOID = #{rootOID}</if>
+            <if test="type != null">AND Type = #{type}</if>
+            <if test="roleOID != null">AND RoleOID = #{roleOID}</if>
+            AND TaskOID IS NULL
+            AND DeleteDt IS NULL
+        </where>
+        ORDER BY Ord
+    </select>
+
+    <select id="selOemBPolicy" parameterType="PmsProject" resultType="PmsProject">
+        SELECT A.BPolicyOID, COUNT(*) AS Count
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        <where>
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="carLibOID != null">AND B.Car_Lib_OID = #{carLibOID}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+        GROUP BY A.BPolicyOID
+    </select>
+
+    <select id="viewWbsPmsRelation" parameterType="PmsRelationship" resultType="PmsRelationship">
+        WITH RECURSIVE_QUERY(OID, FromOID, ToOID, Type, DeleteDt) AS (
+            SELECT OID, FromOID, ToOID, Type, DeleteDt
+            FROM T_DPMS_RELATIONSHIP
+            WHERE FromOID = #{fromOID}
+              AND Type = 'WBS'
+              AND DeleteDt IS NULL
+            UNION ALL
+            SELECT B.OID, B.FromOID, B.ToOID, B.Type, B.DeleteDt
+            FROM T_DPMS_RELATIONSHIP B
+            INNER JOIN RECURSIVE_QUERY C ON B.FromOID = C.ToOID
+            WHERE B.Type = 'WBS' AND B.DeleteDt IS NULL
+        )
+        SELECT * FROM RECURSIVE_QUERY
+    </select>
+
+    <!-- Issue Comment -->
+    <insert id="insPmsIssueComment" parameterType="PmsIssueComment">
+        <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DPMS_ISSUE_COMMENT
+        </selectKey>
+        INSERT INTO T_DPMS_ISSUE_COMMENT
+        ( OID
+        , Comment
+        , IssueBPolicyOID
+        , CreateUs
+        , CreateDt
+        , IssueOID
+        , ApprovalType)
+        VALUES
+        ( #{oid}
+        , #{comment}
+        , #{issueBPolicyOID}
+        , #{createUs}
+        , GETDATE()
+        , #{issueOID}
+        , #{approvalType})
+    </insert>
+
+    <select id="selPmsIssueComment" parameterType="PmsIssueComment" resultType="PmsIssueComment">
+        SELECT
+        OID
+        , Comment
+        , IssueBPolicyOID
+        , CreateUs
+        , CreateDt
+        , IssueOID
+        , ApprovalType
+        FROM T_DPMS_ISSUE_COMMENT
+        WHERE IssueOID = #{issueOID}
+    </select>
+
+    <select id="recursionPmsRelation" parameterType="PmsRelationship" resultType="PmsRelationship">
+        WITH RECURSIVE_QUERY(OID, RootOID, FromOID, ToOID, Type) AS (
+            SELECT OID, RootOID, FromOID, ToOID, Type
+            FROM T_DPMS_RELATIONSHIP
+            WHERE DeleteDt IS NULL
+            <if test="type != null">AND Type = #{type}</if>
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+            <if test="rootOIDs != null and rootOIDs.size() > 0">
+                AND RootOID IN
+                <foreach collection="rootOIDs" item="rid" open="(" close=")" separator=",">#{rid}</foreach>
+            </if>
+            <if test="fromOIDs != null and fromOIDs.size() > 0">
+                AND FromOID IN
+                <foreach collection="fromOIDs" item="fid" open="(" close=")" separator=",">#{fid}</foreach>
+            </if>
+            UNION ALL
+            SELECT B.OID, B.RootOID, B.FromOID, B.ToOID, B.Type
+            FROM T_DPMS_RELATIONSHIP B
+            INNER JOIN RECURSIVE_QUERY C ON B.FromOID = C.ToOID AND B.Type = C.Type AND B.RootOID = C.RootOID
+            WHERE B.DeleteDt IS NULL
+        )
+        SELECT * FROM RECURSIVE_QUERY
+        ORDER BY RootOID
+    </select>
+
+    <!-- Process updates -->
+    <update id="udtPmsProcess" parameterType="PmsProcess">
+        UPDATE T_DPMS_PROCESS
+        <set>
+            <if test="processType != null">ProcessType = #{processType},</if>
+            <if test="id != null">Id = #{id},</if>
+            <if test="dependency != null">Dependency = #{dependency},</if>
+            <if test="dependencyType != null">DependencyType = #{dependencyType},</if>
+            <if test="level != null">Level = #{level},</if>
+            <if test="estStartDt != null">EstStartDt = #{estStartDt},</if>
+            <if test="estEndDt != null">EstEndDt = #{estEndDt},</if>
+            <if test="estDuration != null">EstDuration = #{estDuration},</if>
+            <if test="actStartDt != null">ActStartDt = #{actStartDt},</if>
+            <if test="actEndDt != null">ActEndDt = #{actEndDt},</if>
+            <if test="actDuration != null">ActDuration = #{actDuration},</if>
+            <if test="complete != null">Complete = #{complete},</if>
+            <if test="no != null">No = #{no},</if>
+            <if test="progressRate != null">ProgressRate = #{progressRate},</if>
+            <if test="isSkipped != null">IsSkipped = #{isSkipped},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtPmsProcessDependency" parameterType="PmsProcess">
+        UPDATE T_DPMS_PROCESS
+        <set>
+            <if test="dependency != null">Dependency = #{dependency},</if>
+            <if test="dependency == null">Dependency = NULL,</if>
+            <if test="dependencyType != null">DependencyType = #{dependencyType},</if>
+            <if test="dependencyType == null">DependencyType = NULL,</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- Additional Project queries from legacy iBATIS map -->
+    <select id="selLibDelCheckPms" parameterType="PmsProject" resultType="PmsProject">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        <where>
+            AND A.DeleteDt IS NULL
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="oemLibOID != null">AND B.Oem_Lib_OID = #{oemLibOID}</if>
+            <if test="carLibOID != null">AND B.Car_Lib_OID = #{carLibOID}</if>
+            <if test="itemNo != null">AND B.ITEM_No = #{itemNo}</if>
+            <if test="itemMiddle != null">AND B.ITEM_Middle = #{itemMiddle}</if>
+            <if test="customerOID != null">AND B.Customer_OID = #{customerOID}</if>
+        </where>
+    </select>
+
+    <select id="selTempPmsProject" parameterType="PmsProject" resultType="PmsProject">
+        SELECT A.*
+        ,IsTemplate, ProjectType, EstStartDt, EstEndDt, EstDuration, ActStartDt, ActEndDt, ActDuration, WorkingDay, CalendarOID, Complete, Oem_Lib_OID, Car_Lib_OID, ITEM_No, ITEM_Middle, ProjectGrade, Customer_OID, ProductNm, TemplateOID, TemplateContent, EstDisposalDt, MassProdDt, DisconDt, Forecast, WrCreateStore, DevCost, MoldCost, EquipCost, TargetCost, SalesOrderOID, SalesOrderOBNO, IsSalesOrder
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        <where>
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="bpolicyOID != null">AND A.BPolicyOID = #{bpolicyOID}</if>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="name != null">AND A.Name LIKE CONCAT('%',#{name},'%')</if>
+            <if test="description != null">AND A.Description LIKE CONCAT('%',#{description},'%')</if>
+            <if test="projectType != null">AND B.ProjectType = #{projectType}</if>
+            <if test="oemLibOID != null">AND B.Oem_Lib_OID = #{oemLibOID}</if>
+            <if test="carLibOID != null">AND B.Car_Lib_OID = #{carLibOID}</if>
+            <if test="isTemplate != null">AND B.IsTemplate IS NOT NULL</if>
+            <if test="isTemplate == null">AND B.IsTemplate IS NULL</if>
+            <if test="oids != null and oids.size() > 0">
+                AND A.OID IN
+                <foreach collection="oids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+            </if>
+            <if test="massProdDt != null">AND B.MassProdDt &gt;= #{massProdDt}</if>
+            <if test="disconDt != null">AND B.DisconDt &lt;= #{disconDt}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+        ORDER BY CASE WHEN B.ProjectGrade IS NULL THEN 1 ELSE 0 END, B.ProjectGrade
+        <if test='pageNum != null and pageCount != null'>
+            OFFSET ${(pageNum - 1) * pageCount} ROWS FETCH NEXT #{pageCount} ROWS ONLY
+        </if>
+    </select>
+
+    <select id="selTempPmsProjectCount" parameterType="PmsProject" resultType="int">
+        SELECT COUNT(1)
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        <where>
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="bpolicyOID != null">AND A.BPolicyOID = #{bpolicyOID}</if>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="name != null">AND A.Name LIKE CONCAT('%',#{name},'%')</if>
+            <if test="description != null">AND A.Description LIKE CONCAT('%',#{description},'%')</if>
+            <if test="projectType != null">AND B.ProjectType = #{projectType}</if>
+            <if test="oemLibOID != null">AND B.Oem_Lib_OID = #{oemLibOID}</if>
+            <if test="carLibOID != null">AND B.Car_Lib_OID = #{carLibOID}</if>
+            <if test="isTemplate != null">AND B.IsTemplate IS NOT NULL</if>
+            <if test="isTemplate == null">AND B.IsTemplate IS NULL</if>
+            <if test="oids != null and oids.size() > 0">
+                AND A.OID IN
+                <foreach collection="oids" item="id" open="(" close=")" separator=",">#{id}</foreach>
+            </if>
+            <if test="massProdDt != null">AND B.MassProdDt &gt;= #{massProdDt}</if>
+            <if test="disconDt != null">AND B.DisconDt &lt;= #{disconDt}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <select id="selChangePmObjects" resultType="PmsProject">
+        SELECT * FROM V_DPMS_PROJECT_CHANGE_PM
+    </select>
+
+    <!-- Baseline mappings -->
+    <insert id="insPmsBaseLineProject" parameterType="PmsBaseLineProject">
+        INSERT INTO T_DPMS_BASE_LINE_PROJECT
+        ( ProjectBaseLineOID, ProjectOID, ProjectNm, ProjectType, EstStartDt, EstEndDt, EstDuration,
+          ActStartDt, ActEndDt, ActDuration, WorkingDay, CalendarOID, Complete )
+        SELECT
+            #{projectBaseLineOID}, A.OID, A.Name, B.ProjectType, B.EstStartDt, B.EstEndDt, B.EstDuration,
+            B.ActStartDt, B.ActEndDt, B.ActDuration, B.WorkingDay, B.CalendarOID, B.Complete
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROJECT B ON A.OID = B.OID
+        WHERE A.OID = #{targetProjectOID}
+    </insert>
+
+    <select id="selPmsBaseLineProject" parameterType="PmsBaseLineProject" resultType="PmsBaseLineProject">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_BASE_LINE_PROJECT B ON A.OID = B.ProjectBaseLineOID
+        <where>
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="projectBaseLineOID != null">AND B.ProjectBaseLineOID = #{projectBaseLineOID}</if>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="name != null">AND A.Name LIKE CONCAT('%',#{name},'%')</if>
+            <if test="description != null">AND A.Description LIKE CONCAT('%',#{description},'%')</if>
+            <if test="projectType != null">AND B.ProjectType = #{projectType}</if>
+            AND A.DeleteDt IS NULL
+        </where>
+    </select>
+
+    <insert id="insPmsBaseLineProcess" parameterType="PmsBaseLineProcess">
+        INSERT INTO T_DPMS_BASE_LINE_PROCESS
+        ( RootBaseLineOID, ProcessOID, ProcessNm, ProcessType, Id, Dependency, Level,
+          EstStartDt, EstEndDt, EstDuration, ActStartDt, ActEndDt, ActDuration, Complete )
+        SELECT
+            #{rootBaseLineOID}, A.OID, A.Name, B.ProcessType, B.Id, B.Dependency, B.Level,
+            B.EstStartDt, B.EstEndDt, B.EstDuration, B.ActStartDt, B.ActEndDt, B.ActDuration, B.Complete
+        FROM T_DOBJECT A
+        INNER JOIN T_DPMS_PROCESS B ON A.OID = B.OID
+        WHERE A.OID = #{targetPrcessOID}
+    </insert>
+
+    <select id="selPmsBaseLineProcess" parameterType="PmsBaseLineProcess" resultType="PmsBaseLineProcess">
+        SELECT *
+        FROM T_DPMS_BASE_LINE_PROCESS
+        <where>
+            <if test="rootBaseLineOID != null">AND RootBaseLineOID = #{rootBaseLineOID}</if>
+            <if test="processOID != null">AND ProcessOID = #{processOID}</if>
+        </where>
+    </select>
+
+    <insert id="insPmsBaseLineRelationship" parameterType="PmsBaseLineRelationship">
+        INSERT INTO T_DPMS_BASE_LINE_RELATIONSHIP
+        ( RootBaseLineOID, OID, Type, FromOID, ToOID, RootOID, Ord, RoleOID, Description, CreateDt, CreateUs )
+        VALUES
+        ( #{rootBaseLineOID}, #{baseData.oid}, #{baseData.type}, #{baseData.fromOID}, #{baseData.toOID},
+          #{baseData.rootOID}, #{baseData.ord}, #{baseData.roleOID}, #{baseData.description}, GETDATE(), #{createUs} )
+    </insert>
+
+    <select id="selPmsBaseLineRelationship" parameterType="PmsBaseLineRelationship" resultType="PmsBaseLineRelationship">
+        SELECT *
+        FROM T_DPMS_BASE_LINE_RELATIONSHIP
+        <where>
+            <if test="rootBaseLineOID != null">AND RootBaseLineOID = #{rootBaseLineOID}</if>
+            <if test="fromOID != null">AND FromOID = #{fromOID}</if>
+            <if test="toOID != null">AND ToOID = #{toOID}</if>
+            <if test="rootOID != null">AND RootOID = #{rootOID}</if>
+            <if test="type != null">AND Type = #{type}</if>
+            AND DeleteDt IS NULL
+        </where>
+        ORDER BY Ord
+    </select>
+
+        <select id="selProjMngtCustomerSchedule" parameterType="CustomerSchedule" resultType="CustomerSchedule">
+            SELECT *
+            FROM T_DCUSTOMER_SCHEDULE
+            WHERE 1 = 1
+            <if test="oid != null">
+                AND OID = #{oid}
+            </if>
+            <if test="carLibOID != null">
+                AND Car_Lib_OID = #{carLibOID}
+            </if>
+            ORDER BY Ord
+        </select>
+
+        <insert id="insProjMngtCustomerSchedule" parameterType="CustomerSchedule">
+            <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+                SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DCUSTOMER_SCHEDULE
+            </selectKey>
+            INSERT INTO T_DCUSTOMER_SCHEDULE
+            ( OID
+            , Name
+            , StartDt
+            , Ord
+            , Car_Lib_OID )
+            VALUES
+            ( #{oid}
+            , #{name}
+            , #{startDt}
+            , #{row}
+            , #{carLibOID} )
+        </insert>
+
+        <delete id="delProjMngtCustomerSchedule" parameterType="CustomerSchedule">
+            DELETE FROM T_DCUSTOMER_SCHEDULE
+            WHERE Car_Lib_OID = #{carLibOID}
+        </delete>
+
+        <insert id="insProjectCustomerSchedule" parameterType="CustomerSchedule">
+            <selectKey order="BEFORE" resultType="int" keyProperty="oid">
+                SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DCUSTOMER_SCHEDULE
+            </selectKey>
+            INSERT INTO T_DCUSTOMER_SCHEDULE
+            ( OID
+            , Name
+            , StartDt
+            , Ord
+            , Car_Lib_OID
+            , ProjectOID )
+            VALUES
+            ( #{oid}
+            , #{name}
+            , #{startDt}
+            , #{row}
+            , #{carLibOID}
+            , #{projectOID} )
+        </insert>
+        
+        <update id="udtProjectCustomerSchedule" parameterType="CustomerSchedule">
+            UPDATE T_DCUSTOMER_SCHEDULE
+            SET ProjectOID = #{projectOID}
+            , StartDt = #{startDt}
+            WHERE OID = #{oid}
+        </update>
+
+    
+    <!-- ========================= -->
+    <!--       New CheckList       -->
+    <!-- ========================= -->
+    <select id="selPmsNewCheckList" parameterType="PmsNewCheckList" resultType="PmsNewCheckList">
+        SELECT A.*, B.*
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DPMS_CHECKLIST B ON A.OID = B.OID
+        <where>
+            AND A.DeleteDt IS NULL
+            <if test="type != null">AND A.Type = #{type}</if>
+            <if test="oid != null">AND A.OID = #{oid}</if>
+            <if test="projectOID != null">AND B.ProjectOID = #{projectOID}</if>
+            <if test="gateOID != null">AND B.GateOID = #{gateOID}</if>
+            <if test="confirmCheck != null">AND B.ConfirmCheck = #{confirmCheck}</if>
+        </where>
+    </select>
+
+    <insert id="insPmsNewCheckList" parameterType="PmsNewCheckList">
+        INSERT INTO T_DPMS_CHECKLIST
+        ( OID
+        , ProjectOID
+        , GateOID
+        , ConfirmCheck )
+        VALUES
+        ( #{oid}
+        , #{projectOID}
+        , #{gateOID}
+        , #{confirmCheck} )
+    </insert>
+
+    <update id="udtPmsNewCheckList" parameterType="PmsNewCheckList">
+        UPDATE T_DPMS_CHECKLIST
+        <set>
+            <if test="confirmCheck != null">ConfirmCheck = #{confirmCheck},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <select id="selPmsWbs" parameterType="PmsWbs" resultType="PmsWbs">
+        SELECT
+            rel.FromOID,
+            rel.RootOID,
+            p.OID,
+            p.ProcessType,
+            obj.Name,
+            obj.BPolicyOID,
+            bp.Name AS BPolicyCd,
+            bp.StatusNm AS BPolicyNm,
+            p.Id,
+            p.Dependency,
+            p.DependencyType,
+            p.EstStartDt,
+            p.EstEndDt,
+            p.EstDuration,
+            p.ActStartDt,
+            p.ActEndDt,
+            p.ActDuration,
+            p.Level,
+            p.Complete,
+            p.No,
+            p.IsSkipped
+
+            FROM T_DPMS_RELATIONSHIP rel
+            JOIN T_DPMS_PROCESS p ON p.OID = rel.ToOID
+            JOIN T_DOBJECT obj ON obj.OID = p.OID
+            LEFT JOIN T_BPOLICY bp ON bp.StatusOID = obj.BPolicyOID
+        WHERE rel.RootOID = #{rootOid}
+        AND rel.Type = 'WBS'
+        AND rel.DeleteDt IS NULL
+    </select>
+
+    <select id="selPmsWbsMember" parameterType="PmsWbsMember" resultType="PmsWbsMember">
+        SELECT
+            rel.FromOID,
+            rel.RootOID,
+            p.OID,
+            p.ID,
+            o.Name
+
+            FROM T_DPMS_RELATIONSHIP rel
+            JOIN T_DPERSON p ON p.OID = rel.ToOID
+            JOIN T_DOBJECT o ON o.OID = p.OID
+        WHERE rel.RootOID = #{rootOid}
+        AND rel.Type = 'MEMBER'
+        AND rel.DeleteDt IS NULL
+    </select>
+</mapper>

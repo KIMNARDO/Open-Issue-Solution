@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.papsnet.openissue.biz.salesOrder.dao.SalesOrderDAO">
+    <select id="selSalesOrders" parameterType="SalesOrder" resultType="SalesOrder">
+        SELECT A.OID
+             , A.Name
+             , A.Type
+             , A.Description
+             , A.TableNm
+             , A.BPolicyOID
+             , A.TdmxOID
+             , A.Thumbnail
+             , A.Revision
+             , A.IsLatest
+             , A.IsReleasedLatest
+             , A.CreateDt
+             , A.CreateUs
+             , A.ModifyDt
+             , A.ModifyUs
+             , A.DeleteDt
+             , A.DeleteUs
+             , A.GwDeptId
+             , A.GwDeptCode
+             , A.GwDeptIsUse
+             , B.*
+             , C2.*
+        FROM T_DOBJECT A
+                 LEFT OUTER JOIN T_DSALESORDER B ON A.OID = B.OID
+                 LEFT OUTER JOIN (
+            SELECT C.IF_KEY, C.IF_GB, C.IF_CREATETIME, C.IF_STATUS, C.IF_SENDTIME, C.IF_ERRMSG, C.PJ_NO, C.OB_NO, C.PGM_CD, C.PGM_NM, C.ITEM_GROUP_CD, C.ITEM_GROUP_NM, C.ITEM_TYPE_CD, C.ITEM_TYPE_NM, C.OEM_NM, C.CUSTOMER_NM, C.STATUS_CD, C.STATUS_NM, C.PM_NM, C.TYPE_DESC, C.REMARK, C.DEV_COST, C.MOLD_COST, C.EQP_COST, C.PLM_OID, C.PM, C.REP_ESTIMATE
+            FROM IF_RECV_BUSINESS_STATUS C
+                     INNER JOIN (
+                SELECT OB_NO, MAX(IF_CREATETIME) AS MaxCreateTime
+                FROM IF_RECV_BUSINESS_STATUS
+                GROUP BY OB_NO
+            ) D ON C.OB_NO = D.OB_NO AND C.IF_CREATETIME = D.MaxCreateTime
+        ) C2 ON B.PJ_NO = C2.PJ_NO
+        WHERE A.DeleteDt IS NULL
+        <if test="type != null">
+            AND A.Type = #{type}
+        </if>
+
+        <if test="oid != null">
+            AND B.OID = #{oid}
+        </if>
+
+        <if test="pjNo != null and pjNo != ''">
+            AND B.PJ_NO LIKE CONCAT('%', #{pjNo}, '%')
+        </if>
+
+        <if test="obNo != null and obNo != ''">
+            AND C2.OB_NO = #{obNo}
+        </if>
+
+        <if test="pgmNm != null and pgmNm != ''">
+            AND C2.PGM_NM LIKE CONCAT('%', #{pgmNm}, '%')
+        </if>
+
+        <if test="itemGroupCd != null and itemGroupCd != ''">
+            AND C2.ITEM_GROUP_CD = #{itemGroupCd}
+        </if>
+
+        <if test="oemNm != null and oemNm != ''">
+            AND C2.OEM_NM LIKE CONCAT('%', #{oemNm}, '%')
+        </if>
+
+        <if test="statusNm != null and statusNm != ''">
+            AND C2.STATUS_NM LIKE CONCAT('%', #{statusNm}, '%')
+        </if>
+
+        <if test="customerNm != null and customerNm != ''">
+            AND C2.CUSTOMER_NM LIKE CONCAT('%', #{customerNm}, '%')
+        </if>
+
+        <if test="ifGb != null and ifGb != ''">
+            AND C2.IF_GB != #{ifGb}
+        </if>
+    </select>
+
+    <select id="selSalesOrderByKey" parameterType="SalesOrder" resultType="SalesOrder">
+        SELECT TOP(1)
+          A.OID
+        , A.Name
+        , A.Type
+        , A.Description
+        , A.TableNm
+        , A.BPolicyOID
+        , A.TdmxOID
+        , A.Thumbnail
+        , A.Revision
+        , A.IsLatest
+        , A.IsReleasedLatest
+        , A.CreateDt
+        , A.CreateUs
+        , A.ModifyDt
+        , A.ModifyUs
+        , A.DeleteDt
+        , A.DeleteUs
+        , A.GwDeptId
+        , A.GwDeptCode
+        , A.GwDeptIsUse
+        , B.ERP_OID
+        , B.PJ_NO, OEMOID, CarOID, ItemOID, ItemClassOID, CustomerOID, PmOID, TemplateOID, EstStartDt, EstEndDt, EstDuration, WorkingDay, ActStartDt, ActEndDt, ActDuration, Complete
+        , C2.*
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DSALESORDER B ON A.OID = B.OID
+        LEFT OUTER JOIN (
+        SELECT C.IF_KEY, C.IF_GB, C.IF_CREATETIME, C.IF_STATUS, C.IF_SENDTIME, C.IF_ERRMSG, C.PJ_NO, C.OB_NO, C.PGM_CD, C.PGM_NM, C.ITEM_GROUP_CD, C.ITEM_GROUP_NM, C.ITEM_TYPE_CD, C.ITEM_TYPE_NM, C.OEM_NM, C.CUSTOMER_NM, C.STATUS_CD, C.STATUS_NM, C.PM_NM, C.TYPE_DESC, C.REMARK, C.DEV_COST, C.MOLD_COST, C.EQP_COST, C.PLM_OID, C.PM, C.REP_ESTIMATE
+        FROM IF_RECV_BUSINESS_STATUS C
+        INNER JOIN (
+        SELECT OB_NO, MAX(IF_CREATETIME) AS MaxCreateTime
+        FROM IF_RECV_BUSINESS_STATUS
+        GROUP BY OB_NO
+        ) D ON C.OB_NO = D.OB_NO AND C.IF_CREATETIME = D.MaxCreateTime
+        ) C2 ON B.PJ_NO = C2.PJ_NO
+        WHERE A.DeleteDt IS NULL
+        <if test="type != null">
+            AND A.Type = #{type}
+        </if>
+        <if test="oid != null">
+            AND B.OID = #{oid}
+        </if>
+        <if test="pjNo != null and pjNo != ''">
+            AND B.PJ_NO LIKE CONCAT('%', #{pjNo}, '%')
+        </if>
+
+        <if test="obNo != null and obNo != ''">
+            AND C2.OB_NO = #{obNo}
+        </if>
+
+        <if test="pgmNm != null and pgmNm != ''">
+            AND C2.PGM_NM LIKE CONCAT('%', #{pgmNm}, '%')
+        </if>
+
+        <if test="itemGroupCd != null and itemGroupCd != ''">
+            AND C2.ITEM_GROUP_CD = #{itemGroupCd}
+        </if>
+
+        <if test="oemNm != null and oemNm != ''">
+            AND C2.OEM_NM LIKE CONCAT('%', #{oemNm}, '%')
+        </if>
+
+        <if test="statusNm != null and statusNm != ''">
+            AND C2.STATUS_NM LIKE CONCAT('%', #{statusNm}, '%')
+        </if>
+
+        <if test="customerNm != null and customerNm != ''">
+            AND C2.CUSTOMER_NM LIKE CONCAT('%', #{customerNm}, '%')
+        </if>
+
+        <if test="ifGb != null and ifGb != ''">
+            AND C2.IF_GB != #{ifGb}
+        </if>
+        ORDER BY C2.IF_KEY DESC
+    </select>
+
+
+    
+    <!-- Update: 프로젝트 매니저(PmOID) 수정 -->
+    <update id="udtSalesOrderPM" parameterType="SalesOrder">
+        UPDATE IF_RECV_BUSINESS_STATUS
+        SET 
+            PM = #{pm},
+            PM_NM = #{pmNm}
+        WHERE PJ_NO = #{pjNo}
+    </update>
+
+    <!-- Update: 인터페이스 테이블의 비고/대표견적값 수정 (IF_KEY 기준) -->
+    <update id="udtRemarkAndRep" parameterType="SalesOrder">
+        UPDATE IF_RECV_BUSINESS_STATUS
+        SET REMARK = #{remark},
+            REP_ESTIMATE = #{repEstimate}
+        WHERE IF_KEY = #{ifKey}
+    </update>
+
+    <!-- Update: PLM 수주 정보(일정/완료율 등) 수정 -->
+    <update id="udtPlmSalesOrder" parameterType="SalesOrder">
+        UPDATE T_DSALESORDER
+        SET EstStartDt = #{estStartDt},
+            EstEndDt   = #{estEndDt},
+            EstDuration = #{estDuration},
+            WorkingDay = #{workingDay},
+            ActStartDt = #{actStartDt},
+            ActEndDt   = #{actEndDt},
+            ActDuration = #{actDuration},
+            Complete   = #{complete}
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- Update: PLM 수주 템플릿 포함 수정 -->
+    <update id="udtPlmTemplateSalesOrder" parameterType="SalesOrder">
+        UPDATE T_DSALESORDER
+        SET TemplateOID = #{templateOid},
+            EstStartDt = #{estStartDt},
+            EstEndDt   = #{estEndDt},
+            EstDuration = #{estDuration},
+            WorkingDay = #{workingDay},
+            ActStartDt = #{actStartDt},
+            ActEndDt   = #{actEndDt},
+            ActDuration = #{actDuration},
+            Complete   = #{complete}
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- Insert: PLM 수주 (OID는 사전에 생성되어 있다고 가정) -->
+    <insert id="insPlmSalesOrder" parameterType="SalesOrder">
+        INSERT INTO T_DSALESORDER
+            (OID, ERP_OID, PJ_NO, OEMOID, CarOID, ItemOID, ItemClassOID, CustomerOID, PmOID, TemplateOID,
+             EstStartDt, EstEndDt, EstDuration, WorkingDay, ActStartDt, ActEndDt, ActDuration, Complete)
+        VALUES
+            (#{oid}, #{erpOid}, #{pjNo}, #{oemOid}, #{carOid}, #{itemOid}, #{itemClassOid}, #{customerOid}, #{pmOid}, #{templateOid},
+             #{estStartDt}, #{estEndDt}, #{estDuration}, #{workingDay}, #{actStartDt}, #{actEndDt}, #{actDuration}, #{complete})
+    </insert>
+
+    <!-- Select: PLM 수주 단건 조회 (기존 조회와 동일 구조) -->
+    <select id="selPlmSalesOrder" parameterType="SalesOrder" resultType="SalesOrder">
+        SELECT TOP(1)
+          A.OID
+        , A.Name
+        , A.Type
+        , A.Description
+        , A.TableNm
+        , A.BPolicyOID
+        , A.TdmxOID
+        , A.Thumbnail
+        , A.Revision
+        , A.IsLatest
+        , A.IsReleasedLatest
+        , A.CreateDt
+        , A.CreateUs
+        , A.ModifyDt
+        , A.ModifyUs
+        , A.DeleteDt
+        , A.DeleteUs
+        , A.GwDeptId
+        , A.GwDeptCode
+        , A.GwDeptIsUse
+        , B.ERP_OID
+        , B.PJ_NO, OEMOID, CarOID, ItemOID, ItemClassOID, CustomerOID, PmOID, TemplateOID, EstStartDt, EstEndDt, EstDuration, WorkingDay, ActStartDt, ActEndDt, ActDuration, Complete
+        , C2.*
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DSALESORDER B ON A.OID = B.OID
+        LEFT OUTER JOIN (
+            SELECT C.IF_KEY, C.IF_GB, C.IF_CREATETIME, C.IF_STATUS, C.IF_SENDTIME, C.IF_ERRMSG, C.PJ_NO, C.OB_NO, C.PGM_CD, C.PGM_NM, C.ITEM_GROUP_CD, C.ITEM_GROUP_NM, C.ITEM_TYPE_CD, C.ITEM_TYPE_NM, C.OEM_NM, C.CUSTOMER_NM, C.STATUS_CD, C.STATUS_NM, C.PM_NM, C.TYPE_DESC, C.REMARK, C.DEV_COST, C.MOLD_COST, C.EQP_COST, C.PLM_OID, C.PM, C.REP_ESTIMATE
+            FROM IF_RECV_BUSINESS_STATUS C
+            INNER JOIN (
+                SELECT OB_NO, MAX(IF_CREATETIME) AS MaxCreateTime
+                FROM IF_RECV_BUSINESS_STATUS
+                GROUP BY OB_NO
+            ) D ON C.OB_NO = D.OB_NO AND C.IF_CREATETIME = D.MaxCreateTime
+        ) C2 ON B.PJ_NO = C2.PJ_NO
+        WHERE A.DeleteDt IS NULL
+        <if test="type != null">
+            AND A.Type = #{type}
+        </if>
+        <if test="oid != null">
+            AND B.OID = #{oid}
+        </if>
+        <if test="pjNo != null and pjNo != ''">
+            AND B.PJ_NO LIKE CONCAT('%', #{pjNo}, '%')
+        </if>
+        <if test="obNo != null and obNo != ''">
+            AND C2.OB_NO = #{obNo}
+        </if>
+        ORDER BY C2.IF_KEY DESC
+    </select>
+
+    <!-- Rep 설정 업데이트 -->
+    <update id="udtRepStting" parameterType="SalesOrder">
+        UPDATE T_DSALESORDER
+        SET REP = #{rep}
+        WHERE OID = #{oid}
+    </update>
+
+</mapper>

@@ -1,0 +1,46 @@
+.rc-tree-list {
+  padding: 0 8px;
+  color: black;
+  font-weight: normal;
+  font-size: inherit /*16px*/;
+}
+
+.rc-tree-list-holder-inner {
+  row-gap: 3px;
+}
+
+.rc-tree-child-tree {
+  display: block;
+}
+
+.node-motion {
+  transition: all 0.3s;
+  overflow-y: hidden;
+}
+
+.rc-tree-switcher {
+  position: absolute;
+  right: 0;
+  background-image: none !important;
+  /*margin-right: 5px !important;*/
+}
+
+.rc-tree-title {
+  margin-left: 5px !important;
+}
+
+.rc-tree .rc-tree-treenode.drop-container ~ .rc-tree-treenode {
+  border-left: 2px solid #02964e !important;
+}
+
+.rc-tree .rc-tree-treenode.drop-target {
+  background-color: #d9d9d9 !important;
+}
+
+.rc-tree-iconEle,
+.rc-tree-switcher {
+  margin-left: 4px;
+  width: fit-content !important;
+  vertical-align: text-top !important;
+  font-size: 18px;
+}

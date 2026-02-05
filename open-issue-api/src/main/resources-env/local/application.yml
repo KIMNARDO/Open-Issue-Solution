@@ -1,0 +1,46 @@
+# File Upload
+file:
+  upload-root-dir: ./OpenIssueFileStorage
+  preview-path-pattern: /common/preview/**
+  download-path-pattern: /common/download/**
+
+spring:
+  datasource:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    # SQL Server 연결 설정 (실제 값으로 변경 필요)
+    url: jdbc:log4jdbc:sqlserver://localhost:1433;databaseName=OPENISSUE_DB;encrypt=true;trustServerCertificate=true
+    username: sa
+    password: your_password_here
+
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: your_email@example.com
+    password: your_password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# JWT 설정 (Base64 인코딩된 시크릿 키)
+jwt:
+  secret: T3Blbklzc3VlU2VjcmV0S2V5Rm9yV29vcnlQTE1TeXN0ZW0yMDI0U2VjdXJlQXBwbGljYXRpb25Ub2tlbg==
+  expiration: 86400000
+  refresh-expiration: 604800000
+
+# NCP 번역 모듈 설정 (실제 값으로 변경 필요)
+ncp:
+  client:
+    id: your_ncp_client_id
+    secret: your_ncp_client_secret
+  glossary:
+    key: your_ncp_glossary_key
+
+logging:
+  level:
+    root: INFO
+    com.papsnet.openissue: DEBUG
+    jdbc.sqlonly: DEBUG
+    jdbc.resultsettable: INFO

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.papsnet.openissue.common.dao.CalendarDAO">
+
+    <resultMap id="CalendarMap" type="com.papsnet.openissue.common.dto.Calendar">
+        <id property="oid" column="OID"/>
+        <result property="name" column="Name"/>
+        <result property="type" column="Type"/>
+        <result property="description" column="Description"/>
+        <result property="tableNm" column="TableNm"/>
+        <result property="bpolicyOID" column="BPolicyOID"/>
+        <result property="tdmxOID" column="TdmxOID"/>
+        <result property="revision" column="Revision"/>
+        <result property="isLatest" column="IsLatest"/>
+        <result property="isReleasedLatest" column="IsReleasedLatest"/>
+        <result property="thumbnail" column="Thumbnail"/>
+        <result property="createDt" column="CreateDt"/>
+        <result property="createUs" column="CreateUs"/>
+        <result property="modifyDt" column="ModifyDt"/>
+        <result property="modifyUs" column="ModifyUs"/>
+        <result property="deleteDt" column="DeleteDt"/>
+        <result property="deleteUs" column="DeleteUs"/>
+        <result property="workingDay" column="WorkingDay"/>
+        <result property="defaultHoliday" column="DefaultHoliday"/>
+    </resultMap>
+
+    <resultMap id="CalendarDetailMap" type="com.papsnet.openissue.common.dto.CalendarDetail">
+        <id property="calendarDetailOID" column="CalendarDetailOID"/>
+        <result property="calendarOID" column="CalendarOID"/>
+        <result property="year" column="Year"/>
+        <result property="month" column="Month"/>
+        <result property="day" column="Day"/>
+        <result property="title" column="Title"/>
+        <result property="contents" column="Contents"/>
+        <result property="isHoliday" column="IsHoliday"/>
+    </resultMap>
+
+    <!-- Insert Calendar (equivalent to InsCalendar) -->
+    <insert id="InsCalendar" parameterType="com.papsnet.openissue.common.dto.Calendar">
+        INSERT INTO T_DCALENDAR
+        (OID, WorkingDay, DefaultHoliday)
+        VALUES (#{oid}, #{workingDay}, #{defaultHoliday})
+    </insert>
+
+    <!-- Select single Calendar (align with provided iBATIS while keeping MyBatis 3 style) -->
+    <select id="selCalendar" parameterType="com.papsnet.openissue.common.dto.Calendar" resultMap="CalendarMap">
+        SELECT
+            A.OID, A.Type, A.Name, A.Description, A.TableNm, A.BPolicyOID, A.CreateDt, A.CreateUs,
+            A.TdmxOID, A.IsLatest, A.IsReleasedLatest, A.Thumbnail, A.ModifyDt, A.ModifyUs, A.DeleteDt, A.DeleteUs,
+            B.WorkingDay, B.DefaultHoliday
+        FROM T_DOBJECT A
+        LEFT JOIN T_DCALENDAR B ON A.OID = B.OID
+        <where>
+            A.DeleteDt IS NULL
+            <if test="type != null and type != ''">
+                AND A.Type = #{type}
+            </if>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="isLatest != null">
+                AND A.IsLatest = #{isLatest}
+            </if>
+        </where>
+        ORDER BY A.TdmxOID
+    </select>
+
+    <!-- Select Calendar list -->
+    <select id="selCalendars" parameterType="com.papsnet.openissue.common.dto.Calendar" resultMap="CalendarMap">
+        SELECT
+            A.OID, A.Type, A.Name, A.Description, A.TableNm, A.BPolicyOID, A.CreateDt, A.CreateUs,
+            A.TdmxOID, A.IsLatest, A.IsReleasedLatest, A.Thumbnail, A.ModifyDt, A.ModifyUs, A.DeleteDt, A.DeleteUs,
+            B.WorkingDay, B.DefaultHoliday
+        FROM T_DOBJECT A
+        LEFT JOIN T_DCALENDAR B ON A.OID = B.OID
+        <where>
+            A.DeleteDt IS NULL
+            <if test="type != null and type != ''">
+                AND A.Type = #{type}
+            </if>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="isLatest != null">
+                AND A.IsLatest = #{isLatest}
+            </if>
+        </where>
+        ORDER BY A.TdmxOID
+    </select>
+
+    <!-- Insert Calendar Detail (equivalent to InsCalendarDetail) -->
+    <insert id="InsCalendarDetail" parameterType="com.papsnet.openissue.common.dto.CalendarDetail">
+        <selectKey keyProperty="calendarDetailOID" resultType="int" order="BEFORE">
+            SELECT ISNULL(MAX(CalendarDetailOID),0) + 1 AS CalendarDetailOID FROM T_DCALENDARDETAIL
+        </selectKey>
+        INSERT INTO T_DCALENDARDETAIL
+        ( CalendarDetailOID
+        , CalendarOID
+        , Year
+        , Month
+        , Day
+        , Title
+        , Contents
+        , IsHoliday )
+        VALUES
+        ( #{calendarDetailOID}
+        , #{calendarOID}
+        , #{year}
+        , #{month}
+        , #{day}
+        , #{title}
+        , #{contents}
+        , #{isHoliday} )
+    </insert>
+
+    <!-- Select Calendar Details with optional filters (match SelCalenderDetail) -->
+    <select id="selCalenderDetail" parameterType="com.papsnet.openissue.common.dto.CalendarDetail" resultMap="CalendarDetailMap">
+        SELECT *
+        FROM T_DCALENDARDETAIL
+        <where>
+            <if test="calendarOID != null">
+                AND CalendarOID = #{calendarOID}
+            </if>
+            <if test="year != null">
+                AND Year = #{year}
+            </if>
+            <if test="month != null">
+                AND Month = #{month}
+            </if>
+            <if test="day != null">
+                AND Day = #{day}
+            </if>
+            <if test="isHoliday != null">
+                AND IsHoliday = #{isHoliday}
+            </if>
+        </where>
+    </select>
+
+    <!-- Default Holiday definitions -->
+    <select id="SelCalendarHolidayDefailt" resultMap="CalendarDetailMap">
+        SELECT *
+        FROM T_DCALENDAR_HOLIDAY_DEFAULT
+    </select>
+
+</mapper>

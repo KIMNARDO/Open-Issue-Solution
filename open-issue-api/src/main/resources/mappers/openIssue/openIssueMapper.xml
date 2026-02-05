@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.papsnet.openissue.biz.openIssue.dao.OpenIssueDAO">
+    <select id="selOpenIssue" parameterType="OpenIssue" resultType="OpenIssue">
+        SELECT
+        A.*,
+        B.Importance,
+        B.EstFinDt,
+        B.Manager_OID,
+        B.ProjectOID,
+        B.ProjectType,
+        B.IssueType,
+        B.IssueState,
+        B.PlaceOfIssue,
+        B.Contents,
+        B.FinDt,
+        B.Management,
+        B.IsApprovalRequired,
+        B.Gate,
+        B.ProductionSite,
+        B.StrDt,
+        B.Sop,
+        B.ReplaceMembers,
+        B.Remark,
+        C.Name as ManagerNm,
+        B.openIssueType,
+        B.category,
+        B.assignedTo,
+        B.volum,
+        B.salesYear,
+        B.deptProjectNm,
+        B.deptItemNm,
+        B.deptCustomerNm,
+        B.openIssueGroup,
+        B.openIssueCategoryOid,
+        B.closeDt,
+        B.reStartDt,
+        B.delayDt,
+        B.groupCategoryOid,
+        B.issueNo,
+        D.value AS groupCategoryNm,
+        E.Name AS createUsNm
+        FROM T_DOBJECT A WITH (NOLOCK)
+        INNER JOIN T_DOPENISSUE B WITH (NOLOCK) ON A.OID = B.OID
+        LEFT JOIN T_DOBJECT C WITH (NOLOCK) ON C.OID = B.Manager_OID
+        LEFT JOIN T_DOPENISSUE_GROUP_CATEGORY D WITH (NOLOCK) ON B.groupCategoryOid = D.OID
+        LEFT OUTER JOIN T_DOBJECT E WITH (NOLOCK) ON A.CreateUs = E.OID
+        <where>
+            <if test="type != null">
+                AND A.Type LIKE CONCAT(#{type}, '%')
+            </if>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="name != null">
+                AND A.Name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="description != null">
+                AND A.Description LIKE CONCAT('%', #{description}, '%')
+            </if>
+            <if test="isApprovalRequired != null">
+                AND B.IsApprovalRequired = #{isApprovalRequired}
+            </if>
+            <if test="openIssueType != null">
+                AND B.openIssueType = #{openIssueType}
+            </if>
+            <if test="openIssueGroupList != null and openIssueGroupList.size() > 0">
+                AND B.openIssueGroup IN
+                <foreach item="gid" collection="openIssueGroupList" open="(" separator="," close=")">
+                    #{gid}
+                </foreach>
+            </if>
+            <if test="openIssueCategoryOid != null and openIssueCategoryOid != ''">
+                AND B.openIssueCategoryOid = #{openIssueCategoryOid}
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+        ORDER BY A.CreateDt desc
+    </select>
+
+<!--    TODO-->
+    <select id="searchOpenIssue" parameterType="OpenIssue" resultType="OpenIssue">
+        SELECT
+        A.*,
+        B.Importance,
+        B.EstFinDt,
+        B.Manager_OID,
+        B.ProjectOID,
+        B.ProjectType,
+        B.IssueType,
+        B.IssueState,
+        B.PlaceOfIssue,
+        B.Contents,
+        B.FinDt,
+        B.Management,
+        B.IsApprovalRequired,
+        B.Gate,
+        B.ProductionSite,
+        B.StrDt,
+        B.Sop,
+        B.ReplaceMembers,
+        B.Remark,
+        B.openIssueType,
+        B.category,
+        B.assignedTo,
+        B.volum,
+        B.salesYear,
+        B.deptProjectNm,
+        B.deptItemNm,
+        B.deptCustomerNm,
+        B.openIssueGroup,
+        B.openIssueCategoryOid,
+        B.closeDt,
+        B.reStartDt,
+        B.delayDt,
+        B.groupCategoryOid,
+        B.issueNo
+        FROM T_DOBJECT A
+        INNER JOIN T_DOPENISSUE B ON A.OID = B.OID
+        LEFT OUTER JOIN T_DOPENISSUE_RELATIONSHIP AS C ON B.OID = C.FromOID
+        LEFT OUTER JOIN T_DPERSON AS D ON C.ToOID = D.OID
+        LEFT OUTER JOIN T_DOBJECT AS E ON D.OID = E.OID	AND E.Type = 'PERSON'
+        <where>
+            <if test="type != null">
+                AND A.Type = #{type}
+            </if>
+            <if test="openIssueType != null">
+                AND B.openIssueType = #{openIssueType}
+            </if>
+            <if test="openIssueCategoryOid != null">
+                AND B.openIssueCategoryOid = #{openIssueCategoryOid}
+            </if>
+            <if test="openIssueGroup != null">
+                AND B.openIssueGroup = #{openIssueGroup}
+            </if>
+            <if test="searchWord != null">
+                AND (
+                    A.Description LIKE CONCAT('%', #{searchWord}, '%')
+                    OR B.Contents LIKE CONCAT('%', #{searchWord}, '%')
+                    OR E.Name LIKE CONCAT('%', #{searchWord}, '%')
+                    )
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+        ORDER BY B.issueNo DESC, A.CreateDt DESC
+    </select>
+
+
+    <select id="selAllOpenIssue" parameterType="OpenIssue" resultType="OpenIssue">
+        SELECT
+        A.*,
+        B.Importance,
+        B.EstFinDt,
+        B.Manager_OID,
+        B.ProjectOID,
+        B.ProjectType,
+        B.IssueType,
+        B.IssueState,
+        B.PlaceOfIssue,
+        B.Contents,
+        B.FinDt,
+        B.Management,
+        B.IsApprovalRequired,
+        B.Gate,
+        B.ProductionSite,
+        B.StrDt,
+        B.Sop,
+        B.ReplaceMembers,
+        B.Remark,
+        C.Name as ManagerNm,
+        B.openIssueType,
+        B.category,
+        B.assignedTo,
+        B.volum,
+        B.salesYear,
+        B.deptProjectNm,
+        B.deptItemNm,
+        B.deptCustomerNm,
+        B.openIssueGroup,
+        B.openIssueCategoryOid,
+        B.closeDt,
+        B.reStartDt,
+        B.delayDt,
+        B.groupCategoryOid,
+        B.issueNo,
+        D.value AS groupCategoryNm
+        FROM T_DOBJECT A
+        INNER JOIN T_DOPENISSUE B ON A.OID = B.OID
+        LEFT JOIN T_DOBJECT C ON C.OID = B.Manager_OID
+        LEFT JOIN T_DOPENISSUE_GROUP_CATEGORY D ON B.groupCategoryOid = D.OID
+        <where>
+            <if test="type != null">
+                AND A.Type LIKE CONCAT(#{type}, '%')
+            </if>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="name != null">
+                AND A.Name LIKE CONCAT('%', #{name}, '%')
+            </if>
+            <if test="description != null">
+                AND A.Description LIKE CONCAT('%', #{description}, '%')
+            </if>
+            <if test="isApprovalRequired != null">
+                AND B.IsApprovalRequired = #{isApprovalRequired}
+            </if>
+            <if test="oid != null and oid.size() > 0">
+                AND A.OID IN
+                <foreach item="oid" collection="OIDs" open="(" separator="," close=")">
+                    #{oid}
+                </foreach>
+            </if>
+            <if test="openIssueType != null">
+                AND B.openIssueType = #{openIssueType}
+            </if>
+            <if test="openIssueGroupList != null and openIssueGroupList.size() > 0">
+                AND B.openIssueGroup IN
+                <foreach item="gid" collection="openIssueGroupList" open="(" separator="," close=")">
+                    #{gid}
+                </foreach>
+            </if>
+            <if test="openIssueCategoryOid != null and openIssueCategoryOid != ''">
+                AND B.openIssueCategoryOid = #{openIssueCategoryOid}
+            </if>
+            <if test="groupCategoryOid != null and groupCategoryOid != ''">
+                AND B.groupCategoryOid = #{groupCategoryOid}
+            </if>
+            AND A.DeleteDt IS NULL
+        </where>
+        ORDER BY B.issueNo DESC, A.CreateDt DESC
+    </select>
+
+    <insert id="insOpenIssue" parameterType="OpenIssue">
+        <selectKey keyProperty="issueNo" resultType="int" order="BEFORE">
+            SELECT ISNULL(
+              (SELECT MAX(CAST(issueNo AS INT)) FROM T_DOPENISSUE WHERE openIssueCategoryOid = #{openIssueCategoryOid}),
+              0
+            ) + 1
+        </selectKey>
+        INSERT INTO T_DOPENISSUE
+        ( OID
+        , Importance
+        , EstFinDt
+        , Manager_OID
+        , IssueType
+        , Contents
+        , StrDt
+        , FinDt
+        , IsApprovalRequired
+        , Gate
+        , ProjectOID
+        , ProjectType
+        , PlaceOfIssue
+        , IssueTypeB
+        , Management
+        , IssueState
+        , ProductionSite
+        , ReplaceMembers
+        , Sop
+        , Remark
+        , openIssueType
+        , category
+        , assignedTo
+        , volum
+        , salesYear
+        , deptProjectNm
+        , deptItemNm
+        , deptCustomerNm
+        , openIssueGroup
+        , openIssueCategoryOid
+        , groupCategoryOid
+        , issueNo
+        )
+        VALUES
+        ( #{oid}
+        , #{importance}
+        , #{estFinDt}
+        , #{managerOID}
+        , #{issueType}
+        , #{contents}
+        , #{strDt}
+        , #{finDt}
+        , #{isApprovalRequired}
+        , #{gate}
+        , #{projectOID}
+        , #{projectType}
+        , #{placeOfIssue}
+        , #{issueTypeB}
+        , #{management}
+        , #{issueState}
+        , #{productionSite}
+        , #{replaceMembers}
+        , #{sop}
+        , #{remark}
+        , #{openIssueType}
+        , #{category}
+        , #{assignedTo}
+        , #{volum}
+        , #{salesYear}
+        , #{deptProjectNm}
+        , #{deptItemNm}
+        , #{deptCustomerNm}
+        , #{openIssueGroup}
+        , #{openIssueCategoryOid}
+        , #{groupCategoryOid}
+        , #{issueNo}
+        )
+    </insert>
+
+    <update id="updateOpenIssue" parameterType="OpenIssue">
+        UPDATE T_DOPENISSUE
+        <set>
+            <if test="importance != null">
+                , Importance = #{importance}
+            </if>
+            <if test="estFinDt != null">
+                , EstFinDt = #{estFinDt}
+            </if>
+            <if test="managerOID != null">
+                , Manager_OID = #{managerOID}
+            </if>
+            <if test="issueType != null">
+                , IssueType = #{issueType}
+            </if>
+            <if test="contents != null">
+                , Contents = #{contents}
+            </if>
+            <if test="finDt != null">
+                , FinDt = #{finDt}
+            </if>
+            <if test="isApprovalRequired != null">
+                , IsApprovalRequired = #{isApprovalRequired}
+            </if>
+            <if test="gate != null">
+                , Gate = #{gate}
+            </if>
+            <if test="rejectDt != null">
+                , RejectDt = #{rejectDt}
+            </if>
+            <if test="issueTypeB != null">
+                , IssueTypeB = #{issueTypeB}
+            </if>
+            <if test="placeOfIssue != null">
+                , PlaceOfIssue = #{placeOfIssue}
+            </if>
+            <if test="issueState != null">
+                , IssueState = #{issueState}
+            </if>
+            <if test="management != null">
+                , Management = #{management}
+            </if>
+            <if test="strDt != null">
+                , StrDt = #{strDt}
+            </if>
+            <if test="productionSite != null">
+                , ProductionSite = #{productionSite}
+            </if>
+            <if test="sop != null">
+                , Sop = #{sop}
+            </if>
+            <if test="replaceMembers != null">
+                , ReplaceMembers = #{replaceMembers}
+            </if>
+            <if test="remark != null">
+                , Remark = #{remark}
+            </if>
+            <if test="openIssueType != null">
+                , openIssueType = #{openIssueType}
+            </if>
+            <if test="category != null">
+                , category = #{category}
+            </if>
+            <if test="assignedTo != null">
+                , assignedTo = #{assignedTo}
+            </if>
+            <if test="volum != null">
+                , volum = #{volum}
+            </if>
+            <if test="salesYear != null">
+                , salesYear = #{salesYear}
+            </if>
+            <if test="deptProjectNm != null">
+                , deptProjectNm = #{deptProjectNm}
+            </if>
+            <if test="deptItemNm != null">
+                , deptItemNm = #{deptItemNm}
+            </if>
+            <if test="deptCustomerNm != null">
+                , deptCustomerNm = #{deptCustomerNm}
+            </if>
+            <if test="closeDt != null">
+                , closeDt = #{closeDt}
+            </if>
+            <if test="reStartDt != null">
+                , reStartDt = #{reStartDt}
+            </if>
+            <if test="delayDt != null">
+                , delayDt = #{delayDt}
+            </if>
+            <if test="groupCategoryOid != null">
+                , groupCategoryOid = #{groupCategoryOid}
+            </if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="updateOpenIssueIsNull" parameterType="OpenIssue">
+        UPDATE T_DOPENISSUE
+        <set>
+            <if test="groupCategoryOid == null">
+                , groupCategoryOid = null
+            </if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <delete id="deleteOpenIssue" parameterType="int">
+        DELETE FROM T_DOPENISSUE
+        WHERE OID = #{oid}
+    </delete>
+
+    <delete id="deleteOpenIssueBatch" parameterType="list">
+        DELETE FROM T_DOPENISSUE
+        WHERE OID IN
+        <foreach collection="fromOIDs" item="oid" open="(" separator="," close=")">
+            #{oid}
+        </foreach>
+    </delete>
+
+
+    <!--  relationship  -->
+
+    <!-- 조건부 조회 (동적 쿼리) -->
+    <select id="selectRelationshipByCondition" parameterType="map" resultType="OpenIssueRelationship">
+        SELECT
+        OID,
+        FromOID,
+        ToOID,
+        RoleOID,
+        Type,
+        CreateDt,
+        CreateUs,
+        DeleteDt,
+        DeleteUs
+        FROM T_DOPENISSUE_RELATIONSHIP
+        <where>
+            DeleteDt IS NULL
+            <if test="fromOID != null">
+                AND FromOID = #{fromOID}
+            </if>
+            <if test="fromOIDs != null and fromOIDs.size > 0">
+                AND FromOID IN
+                <foreach collection="fromOIDs" item="fid" separator="," open="(" close=")">
+                    #{fid}
+                </foreach>
+            </if>
+            <if test="toOID != null">
+                AND ToOID = #{toOID}
+            </if>
+            <if test="toOIDs != null and toOIDs.size > 0">
+                AND ToOID IN
+                <foreach collection="toOIDs" item="tid" separator="," open="(" close=")">
+                    #{tid}
+                </foreach>
+            </if>
+            <if test="roleOid != null and roleOid != ''">
+                AND RoleOID = #{roleOid}
+            </if>
+            <if test="type != null and type != ''">
+                AND Type = #{type}
+            </if>
+            <if test="createUs != null">
+                AND CreateUs = #{createUs}
+            </if>
+            <if test="startDate != null">
+                AND CreateDt ge #{startDate}
+            </if>
+            <if test="endDate != null">
+                AND CreateDt le #{endDate}
+            </if>
+        </where>
+        ORDER BY CreateDt DESC
+    </select>
+
+    <!-- INSERT 문 (현재 시간 자동 설정 버전) -->
+    <insert id="insertDopenissueRelationship" parameterType="OpenIssueRelationship">
+        INSERT INTO T_DOPENISSUE_RELATIONSHIP (
+        RootOID,
+        FromOID,
+        ToOID,
+        RoleOID,
+        Type,
+        CreateDt,
+        CreateUs
+        ) VALUES (
+        #{rootOid},
+        #{fromOID},
+        #{toOID},
+        #{roleOid},
+        #{type},
+        GETDATE(),
+        #{createUs}
+        )
+    </insert>
+
+    <!-- Batch INSERT -->
+    <insert id="insertDopenissueRelationshipBatch" parameterType="list">
+        INSERT INTO T_DOPENISSUE_RELATIONSHIP (
+        FromOID,
+        ToOID,
+        Type,
+        CreateDt,
+        CreateUs
+        ) VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+            #{item.fromOID},
+            #{item.toOID},
+            #{item.type},
+            GETDATE(),
+            #{item.createUs}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateOpenIssueRelationship" parameterType="OpenIssueRelationship">
+        UPDATE T_DOPENISSUE_RELATIONSHIP
+        SET RoleOID = #{roleOid}
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- 물리적 DELETE 문 -->
+    <delete id="deleteDopenissueRelationship" parameterType="int">
+        DELETE FROM T_DOPENISSUE_RELATIONSHIP
+        WHERE OID = #{oid}
+    </delete>
+
+    <!-- 특정 타입의 관계 삭제 -->
+    <!-- 조건부 DELETE (FromOID와 Type으로 삭제) -->
+    <delete id="deleteRelationsByFromAndType" parameterType="OpenIssueRelationship">
+        DELETE FROM T_DOPENISSUE_RELATIONSHIP
+        WHERE FromOID = #{fromOID}
+        AND Type = #{type}
+    </delete>
+
+    <delete id="deleteOpenIssueRelationship" parameterType="OpenIssueRelationship">
+        DELETE FROM T_DOPENISSUE_RELATIONSHIP
+        WHERE
+        type = #{type}
+        <if test="oid != null and oid gt 0 ">
+            AND OID = #{oid}
+        </if>
+        <if test="fromOID != null and fromOID gt 0 ">
+            AND FromOID = #{fromOID}
+        </if>
+        <if test="toOID != null and toOID gt 0 ">
+            AND ToOID = #{toOID}
+        </if>
+        <if test="fromOIDs != null and fromOIDs.size gt 0">
+            AND FromOID IN
+            <foreach collection="fromOIDs" item="foid" open="(" separator="," close=")">
+                #{foid}
+            </foreach>
+        </if>
+    </delete>
+
+
+    <!--  groupDef   -->
+    <select id="selectDopenissueGroupDef" resultType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef">
+        SELECT * FROM T_DOPENISSUE_GROUPDEF
+        <where>
+            <if test="openIssueGroup != null and openIssueGroup gt 0 ">
+                AND open_issue_group = #{openIssueGroup}
+            </if>
+            <if test="groupName != null and groupName != ''">
+                AND group_name = #{groupName}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDopenissueGroupDefCount" resultType="int">
+        SELECT COUNT(openIssueGroup) FROM T_DOPENISSUE_GROUPDEF
+        <where>
+            openIssueGroup = #{openIssueGroup}
+        </where>
+    </select>
+
+    <update id="updateDopenissueGroupDef">
+        UPDATE T_DOPENISSUE_GROUPDEF
+        <set>
+            <if test="groupName != null and groupName != ''">
+                , group_name = #{groupName}
+            </if>
+        </set>
+        <where>
+            open_issue_group = #{openIssueGroup}
+        </where>
+    </update>
+
+    <select id="selectOpenIssueGroupDefById" parameterType="int" resultType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef">
+        SELECT A.OID, Name, Type, Description, TableNm, BPolicyOID, TdmxOID, Thumbnail, Revision, IsLatest, IsReleasedLatest, CreateDt, CreateUs, ModifyDt, ModifyUs, DeleteDt, DeleteUs, GwDeptId, GwDeptCode, GwDeptIsUse
+        , from_oid, group_type, group_department_oid, ord
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DOPENISSUE_GROUPDEF B ON A.OID = B.OID
+        WHERE A.OID = #{oid}
+    </select>
+
+    <select id="selectOpenIssueGroupDefByData" parameterType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef" resultType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef">
+        SELECT A.OID, Name, Type, Description, TableNm, BPolicyOID, TdmxOID, Thumbnail, Revision, IsLatest, IsReleasedLatest, CreateDt, CreateUs, ModifyDt, ModifyUs, DeleteDt, DeleteUs, GwDeptId, GwDeptCode, GwDeptIsUse
+             , from_oid, group_type, group_department_oid, ord
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DOPENISSUE_GROUPDEF B ON A.OID = B.OID
+        WHERE Type = #{type}
+        <if test="oid != null and oid gt 0 ">
+            AND A.OID = #{oid}
+        </if>
+        <if test="name != null and name != ''">
+            AND Name = #{name}
+        </if>
+        <if test="fromOid != null and fromOid gt 0 ">
+            AND from_oid = #{fromOid}
+        </if>
+        <if test="groupType != null and groupType != ''">
+            AND group_type = #{groupType}
+        </if>
+        <if test="groupDepartmentOid != null and groupDepartmentOid gt 0 ">
+            AND group_department_oid = #{groupDepartmentOid}
+        </if>
+    </select>
+
+    <select id="selectOpenIssueGroupDefList" parameterType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef" resultType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef">
+        SELECT A.OID, Name, Type, Description, TableNm, BPolicyOID, TdmxOID, Thumbnail, Revision, IsLatest, IsReleasedLatest, CreateDt, CreateUs, ModifyDt, ModifyUs, DeleteDt, DeleteUs, GwDeptId, GwDeptCode, GwDeptIsUse
+        , from_oid, group_type, group_department_oid, ord
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DOPENISSUE_GROUPDEF B ON A.OID = B.OID
+        WHERE DeleteDt IS NULL AND Type = #{type}
+        <if test="oid != null and oid gt 0 ">
+            AND A.OID = #{oid}
+        </if>
+        <if test="name != null and name != ''">
+            AND Name = #{name}
+        </if>
+        <if test="fromOid != null and fromOid gt 0 ">
+            AND from_oid = #{fromOid}
+        </if>
+        <if test="groupType != null and groupType != ''">
+            AND group_type = #{groupType}
+        </if>
+        <if test="groupDepartmentOid != null and groupDepartmentOid gt 0 ">
+            AND group_department_oid = #{groupDepartmentOid}
+        </if>
+        ORDER BY B.ord, A.OID
+    </select>
+
+    <insert id="insertOpenIssueGroupDef" parameterType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef">
+        INSERT INTO T_DOPENISSUE_GROUPDEF (
+            oid,
+            from_oid,
+            group_type,
+            group_department_oid,
+            ord
+        ) VALUES (
+            #{oid},
+            #{fromOid},
+            #{groupType},
+            #{groupDepartmentOid},
+            #{ord}
+        )
+    </insert>
+
+    <update id="updateOpenIssueGroupDef" parameterType="com.papsnet.openissue.biz.openIssue.dto.OpenIssueGroupDef">
+        UPDATE T_DOPENISSUE_GROUPDEF
+        SET ord = #{ord}
+        WHERE oid = #{oid}
+    </update>
+
+    <!-- OpenIssueComment CRUD -->
+    <resultMap id="OpenIssueCommentMap" type="openIssueComment">
+        <id property="oid" column="OID"/>
+        <result property="openIssueOid" column="open_issue_oid"/>
+        <result property="ord" column="Ord"/>
+        <result property="comment" column="Comment"/>
+        <result property="createUs" column="CreateUs"/>
+        <result property="createDt" column="CreateDt"/>
+    </resultMap>
+
+    <insert id="insertOpenIssueComment" parameterType="openIssueComment" useGeneratedKeys="true" keyProperty="oid">
+        INSERT INTO T_DOPENISSUE_COMMENT
+        (open_issue_oid, Ord, Comment, CreateUs, CreateDt)
+        VALUES
+        (#{openIssueOid}, #{ord}, #{comment}, #{createUs}, GETDATE())
+    </insert>
+
+    <update id="updateOpenIssueComment" parameterType="openIssueComment">
+        UPDATE T_DOPENISSUE_COMMENT
+        <set>
+            <if test="openIssueOid != null">open_issue_oid = #{openIssueOid},</if>
+            <if test="ord != null">Ord = #{ord},</if>
+            <if test="comment != null">Comment = #{comment},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <select id="selectOpenIssueCommentList" parameterType="openIssueComment" resultMap="OpenIssueCommentMap">
+        SELECT A.OID, A.open_issue_oid, A.Ord, A.Comment, A.CreateUs, B.Name AS createUsNm, A.CreateDt
+        FROM T_DOPENISSUE_COMMENT A
+        LEFT JOIN T_DOBJECT B ON A.CreateUs = B.OID
+        <where>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="openIssueOid != null">
+                AND A.open_issue_oid = #{openIssueOid}
+            </if>
+        </where>
+        ORDER BY A.CreateDt DESC
+    </select>
+
+    <select id="selectOpenIssueComment" parameterType="openIssueComment" resultMap="OpenIssueCommentMap">
+        SELECT TOP 1 OID, open_issue_oid, Ord, Comment, CreateUs, CreateDt
+        FROM T_DOPENISSUE_COMMENT
+        <where>
+            <if test="oid != null">
+                AND OID = #{oid}
+            </if>
+            <if test="oid == null and openIssueOid != null and ord != null">
+                AND open_issue_oid = #{openIssueOid}
+                AND Ord = #{ord}
+            </if>
+        </where>
+        ORDER BY OID DESC
+    </select>
+
+    <delete id="deleteOpenIssueComment" parameterType="openIssueComment">
+        DELETE FROM T_DOPENISSUE_COMMENT WHERE OID = #{oid}
+    </delete>
+
+    <select id="selectOpenIssueGroupCategoryList" parameterType="openIssueGroupCategory" resultType="openIssueGroupCategory">
+        SELECT A.oid
+             , A.openIssueGroupCategoryOid
+             , A.ord
+             , A.value
+        FROM T_DOPENISSUE_GROUP_CATEGORY A
+        <where>
+            <if test="oid != null">
+                AND A.OID = #{oid}
+            </if>
+            <if test="openIssueGroupCategoryOid != null">
+                AND A.openIssueGroupCategoryOid = #{openIssueGroupCategoryOid}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertOpenIssueGroupCategory" parameterType="openIssueGroupCategory">
+        INSERT INTO T_DOPENISSUE_GROUP_CATEGORY
+            (openIssueGroupCategoryOid, Ord, value, createUs, createDt)
+        VALUES
+            (#{openIssueGroupCategoryOid}, #{ord}, #{value}, #{createUs}, GETDATE())
+    </insert>
+
+
+    <update id="updateOpenIssueGroupCategory" parameterType="openIssueGroupCategory">
+        UPDATE T_DOPENISSUE_GROUP_CATEGORY
+        <set>
+            <if test="value != null">value = #{value},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <delete id="deleteOpenIssueGroupCategory" parameterType="openIssueGroupCategory">
+        DELETE FROM T_DOPENISSUE_GROUP_CATEGORY WHERE OID = #{oid}
+    </delete>
+</mapper>

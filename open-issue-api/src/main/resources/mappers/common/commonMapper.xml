@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.papsnet.openissue.common.dao.CommonDAO">
+    <select id="selBDefine" parameterType="BDefine" resultType="BDefine">
+        SELECT * FROM T_BDEFINE
+        WHERE 1 = 1
+        <if test="oid != null and oid != '' and oid">
+            AND OID = #{oid}
+        </if>
+        <if test="type != null and type != '' and type">
+            AND Type = #{type}
+        </if>
+        <if test="name != null and name != '' and name">
+            AND Name = #{name}
+        </if>
+        <if test="module != null and module != '' and module">
+            AND Module = #{module}
+        </if>
+        order by Ord
+    </select>
+
+    <select id="selBDefines" parameterType="BDefine" resultType="BDefine">
+        SELECT * FROM T_BDEFINE
+        WHERE 1 = 1
+        <if test="oid != null and oid != '' and oid">
+            AND OID = #{oid}
+        </if>
+        <if test="type != null and type != '' and type">
+            AND Type = #{type}
+        </if>
+        <if test="name != null and name != '' and name">
+            AND Name = #{name}
+        </if>
+        <if test="module != null and module != '' and module">
+            AND Module = #{module}
+        </if>
+        order by Ord
+    </select>
+
+    <select id="selBPolicy" parameterType="BPolicy" resultType="BPolicy">
+        SELECT *
+        FROM T_BPOLICY
+        WHERE 1 = 1
+        <if test="oid != null and oid != '' and oid">
+            AND OID = #{oid}
+        </if>
+        <if test="type != null and type != '' and type">
+            AND Type = #{type}
+        </if>
+        <if test="name != null and name != '' and name">
+            AND Name = #{name}
+        </if>
+        <if test="statusOID != null and statusOID != '' and statusOID">
+            AND StatusOID = #{statusOID}
+        </if>
+        <if test="statusNm != null and statusNm != '' and statusNm">
+            AND StatusNm = #{statusNm}
+        </if>
+        <if test="statusOrd != null and statusOrd != '' and statusOrd">
+            AND StatusOrd = #{statusOrd}
+        </if>
+        <if test="beforeActionOID != null and beforeActionOID != '' and beforeActionOID">
+            AND BeforeActionOID = #{beforeActionOID}
+        </if>
+        <if test="nextActionOID != null and nextActionOID != '' and nextActionOID">
+            AND NextActionOID = #{nextActionOID}
+        </if>
+        <if test="oids != null and oids != '' and oids">
+            AND OID IN
+            <foreach item="oid" index="index" collection="oids" open="(" separator="," close=")">
+                #{oid}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selBPolicys" parameterType="BPolicy" resultType="BPolicy">
+        SELECT *
+        FROM T_BPOLICY
+        WHERE 1 = 1
+        <if test="oid != null and oid != '' and oid">
+            AND OID = #{oid}
+        </if>
+        <if test="type != null and type != '' and type">
+            AND Type = #{type}
+        </if>
+        <if test="name != null and name != '' and name">
+            AND Name = #{name}
+        </if>
+        <if test="statusOID != null and statusOID != '' and statusOID">
+            AND StatusOID = #{statusOID}
+        </if>
+        <if test="statusNm != null and statusNm != '' and statusNm">
+            AND StatusNm = #{statusNm}
+        </if>
+        <if test="statusOrd != null and statusOrd != '' and statusOrd">
+            AND StatusOrd = #{statusOrd}
+        </if>
+        <if test="beforeActionOID != null and beforeActionOID != '' and beforeActionOID">
+            AND BeforeActionOID = #{beforeActionOID}
+        </if>
+        <if test="nextActionOID != null and nextActionOID != '' and nextActionOID">
+            AND NextActionOID = #{nextActionOID}
+        </if>
+        <if test="oids != null and oids != '' and oids">
+            AND OID IN
+            <foreach item="oid" index="index" collection="oids" open="(" separator="," close=")">
+                #{oid}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selBPolicyAuth" parameterType="BPolicyAuth" resultType="BPolicyAuth">
+        SELECT
+        A.Type,
+        B.*
+        FROM T_BPOLICY A
+        LEFT OUTER JOIN T_BPOLICY_AUTH B ON A.OID = PolicyOID
+        WHERE 1 = 1
+        <if test="type != null and type != '' and type">
+            AND Type = #{type}
+        </if>
+        <if test="policyOID != null and policyOID != '' and policyOID">
+            AND PolicyOID = #{policyOID}
+        </if>
+        <if test="authDiv != null and authDiv != '' and authDiv">
+            AND AuthDiv = #{authDiv}
+        </if>
+        <if test="authTargetDiv != null and authTargetDiv != '' and authTargetDiv">
+            AND AuthTargetDiv = #{authTargetDiv}
+        </if>
+        <if test="authTargetOID != null and authTargetOID != '' and authTargetOID">
+            AND AuthTargetOID = #{authTargetOID}
+        </if>
+        <if test="authObjectOID != null and authObjectOID != '' and authObjectOID">
+            AND AuthObjectOID = #{authObjectOID}
+        </if>
+    </select>
+
+    <!-- DRelationship -->
+    <select id="selRelationships" parameterType="DRelationship" resultType="DRelationship">
+        SELECT * FROM T_DRELATIONSHIP
+        WHERE DeleteDt IS NULL
+        <if test="oid != null and oid != '' and oid">
+            AND OID = #{oid}
+        </if>
+        <if test="fromOID != null and fromOID != '' and fromOID">
+            AND FromOID = #{fromOID}
+        </if>
+        <if test="toOID != null and toOID != '' and toOID">
+            AND ToOID = #{toOID}
+        </if>
+        <if test="type != null and type != '' and type">
+            AND Type = #{type}
+        </if>
+        ORDER BY ORD
+    </select>
+
+    <select id="selRecursionRelationship" parameterType="DRelationship" resultType="DRelationship">
+        WITH RECURSIVE_QUERY(OID, FromOID, ToOID, Type) AS (
+        SELECT
+        OID
+        , FromOID
+        , ToOID
+        , Type
+        FROM T_DRELATIONSHIP
+        WHERE DeleteDt is null
+        AND Type = #{type}
+        AND FromOID = #{fromOID}
+        UNION ALL
+        SELECT
+        B.OID
+        , B.FromOID
+        , B.ToOID
+        , B.Type
+        FROM T_DRELATIONSHIP B, RECURSIVE_QUERY C
+        WHERE B.FromOID = C.ToOID AND B.Type = C.Type
+        AND B.DeleteDt is null
+        )
+        SELECT *
+        FROM RECURSIVE_QUERY
+        ORDER BY FromOID
+    </select>
+
+    <!-- DObject -->
+    <select id="selTdmxOID" parameterType="DObject" resultType="string">
+        SELECT CONCAT(#{type}, '_', ISNULL(MAX(CONVERT(INT, (REPLACE(TdmxOID, CONCAT(#{type}, '_') ,'')))),0)+1) AS TdmxOID FROM T_DOBJECT WHERE Type = #{type}
+    </select>
+
+    <select id="selNameSeq" parameterType="DObject" resultType="int">
+        SELECT ISNULL(COUNT(*),0) + 1 AS CNT FROM T_DOBJECT WHERE Name LIKE #{name} AND Type = #{type}
+    </select>
+
+    <select id="selDObjects" parameterType="DObject" resultType="DObject">
+        SELECT * FROM T_DOBJECT
+        WHERE DeleteDt IS NULL
+        <if test="oid != null and oid != '' and oid" >
+            AND OID = #{oid}
+        </if>
+        <if test="name != null and name != '' and name" >
+            AND Name = #{name}
+        </if>
+        <if test="type != null and type != '' and type" >
+            AND Type = #{type}
+        </if>
+        <if test="tableNm != null and tableNm != '' and tableNm" >
+            AND TableNm = #{tableNm}
+        </if>
+        <if test="createUs != null and createUs != '' and createUs" >
+            AND CreateUs = #{createUs}
+        </if>
+        <if test="tdmxOID != null and tdmxOID != '' and tdmxOID" >
+            AND TdmxOID = #{tdmxOID}
+        </if>
+        <if test="oids != null and oids" >
+            AND OID IN <foreach separator="," open="(" close=")" collection="oids" item="oid">#{oid}</foreach>
+        </if>
+        <if test="gwDeptIds != null and gwDeptIds" >
+            AND GwDeptId IN <foreach separator="," open="(" close=")" collection="gwDeptIds" item="gwDeptId"> #{gwDeptId} </foreach>
+        </if>
+    </select>
+
+    <select id="selDObject" parameterType="DObject" resultType="DObject">
+        SELECT * FROM T_DOBJECT
+        WHERE DeleteDt IS NULL
+        <if test="oid != null and oid != '' and oid" >
+            AND OID = #{oid}
+        </if>
+        <if test="name != null and name != '' and name" >
+            AND Name = #{name}
+        </if>
+        <if test="type != null and type != '' and type" >
+            AND Type = #{type}
+        </if>
+        <if test="tableNm != null and tableNm != '' and tableNm" >
+            AND TableNm = #{tableNm}
+        </if>
+        <if test="createUs != null and createUs != '' and createUs" >
+            AND CreateUs = #{createUs}
+        </if>
+        <if test="tdmxOID != null and tdmxOID != '' and tdmxOID" >
+            AND TdmxOID = #{tdmxOID}
+        </if>
+        <if test="oids != null and oids" >
+            AND OID IN <foreach separator="," open="(" close=")" collection="oids" item="oid">#{oid}</foreach>
+        </if>
+        <if test="gwDeptIds != null and gwDeptIds" >
+            AND GwDeptId IN <foreach separator="," open="(" close=")" collection="gwDeptIds" item="gwDeptId"> #{gwDeptId} </foreach>
+        </if>
+    </select>
+
+    <insert id="insDObject" parameterType="DObject" >
+        <selectKey statementType="PREPARED" resultType="int" keyProperty="oid" order="BEFORE">
+            SELECT ISNULL(MAX(oid),0) + 1 AS oid FROM T_DOBJECT
+        </selectKey>
+        INSERT INTO T_DOBJECT
+        (OID
+        , Name
+        , Type
+        , Description
+        , TableNm
+        , BPolicyOID
+        , TdmxOID
+        , Revision
+        , IsLatest
+        , IsReleasedLatest
+        , Thumbnail
+        , CreateDt
+        , CreateUs
+        , GwDeptIsUse )
+        VALUES
+        (
+        #{oid}
+        , #{name}
+        , #{type}
+        , #{description}
+        , #{tableNm}
+        , #{bpolicyOID}
+        , #{tdmxOID}
+        , #{revision}
+        , #{isLatest}
+        , #{isReleasedLatest}
+        , #{thumbnail}
+        , GETDATE()
+        , #{createUs}
+        , #{gwDeptIsUse})
+    </insert>
+
+    <update id="udtLatestDObject" parameterType="DObject">
+        UPDATE T_DOBJECT
+        SET IsLatest = 0
+          , ModifyUs = #{modifyUs}
+          , ModifyDt = GETDATE()
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtReleasedLatestDObject" parameterType="DObject">
+        UPDATE T_DOBJECT
+        SET IsReleasedLatest = #{IsReleasedLatest}
+          , ModifyUs = #{modifyUs}
+          , ModifyDt = GETDATE()
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtDObject" parameterType="DObject" >
+        UPDATE T_DOBJECT
+        SET ModifyUs = #{modifyUs}
+        , ModifyDt = GETDATE()
+        <if test="name != null and name" >
+            ,Name = #{name}
+        </if>
+        <if test="description != null and description" >
+            ,Description = #{description}
+        </if>
+        <if test="bpolicyOID != null and bpolicyOID" >
+            ,BPolicyOID = #{bpolicyOID}
+        </if>
+        <if test="revision != null and revision" >
+            ,Revision = #{revision}
+        </if>
+        <if test="thumbnail != null and thumbnail" >
+            ,Thumbnail = #{thumbnail}
+        </if>
+        <if test="gwDeptIsUse != null and gwDeptIsUse" >
+            ,GwDeptIsUse = #{gwDeptIsUse}
+        </if>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="udtCreateUsDObject" parameterType="DObject" >
+        UPDATE T_DOBJECT
+        SET ModifyUs = #{modifyUs}
+        , ModifyDt = GETDATE()
+        <if test="createUs != null and createUs" >
+            ,CreateUs = #{createUs}
+        </if>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="delDObject" parameterType="DObject" >
+        UPDATE T_DOBJECT
+        SET DeleteUs = #{deleteUs}
+          , DeleteDt = GETDATE()
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="delDObjectBatch" parameterType="DObject" >
+        UPDATE T_DOBJECT
+        SET DeleteUs = #{deleteUs}
+        , DeleteDt = GETDATE()
+        WHERE OID IN
+        <foreach collection="oids" item="oid" open="(" separator="," close=")">
+            #{oid}
+        </foreach>
+    </update>
+
+    <update id="delThumbnailDObject" parameterType="DObject" >
+        UPDATE T_DOBJECT
+        SET ModifyUs = #{modifyUs}
+          , ModifyDt = GETDATE()
+          , Thumbnail = NULL
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- File (T_DFILE) -->
+    <insert id="insFile" parameterType="HttpFile">
+        <selectKey statementType="PREPARED" resultType="int" keyProperty="fileOid" order="BEFORE">
+            SELECT ISNULL(MAX(FileOID),0) + 1 AS FileOID FROM T_DFILE
+        </selectKey>
+        INSERT INTO T_DFILE
+        (
+            FileOID,
+            OID,
+            Type,
+            OrgNm,
+            ConvNm,
+            Ext,
+            FileSize,
+            CreateUs,
+            CreateDt,
+            Row,
+            TempPartNo
+        )
+        VALUES
+        (
+            #{fileOid},
+            #{oid},
+            #{type},
+            #{orgNm},
+            #{convNm},
+            #{ext},
+            #{fileSize},
+            #{createUs},
+            GETDATE(),
+            #{row},
+            #{tempPartNo}
+        )
+    </insert>
+
+    <select id="selFile" parameterType="HttpFile" resultType="HttpFile">
+        SELECT 
+            A.FileOID AS fileOid,
+            A.OID AS oid,
+            A.Type AS type,
+            A.OrgNm AS orgNm,
+            A.ConvNm AS convNm,
+            A.Ext AS ext,
+            A.FileSize AS fileSize,
+            A.CreateDt AS createDt,
+            A.CreateUs AS createUs,
+            B.Name AS createUsNm,
+            A.DeleteDt AS deleteDt,
+            A.DeleteUs AS deleteUs,
+            C.Name AS deleteUsNm,
+            A.Row AS row,
+            A.TempPartNo AS tempPartNo
+        FROM T_DFILE A
+        LEFT JOIN T_DOBJECT B ON A.CreateUs = B.OID
+        LEFT JOIN T_DOBJECT C ON A.DeleteUs = C.OID
+        WHERE A.DeleteDt IS NULL
+        <if test="oid != null and oid != '' and oid">
+            AND A.OID = #{oid}
+        </if>
+        <if test="fileOid != null and fileOid != '' and fileOid">
+            AND A.FileOID = #{fileOid}
+        </if>
+        <if test="type != null and type != '' and type">
+            AND A.Type = #{type}
+        </if>
+        <if test="row != null and row != '' and row">
+            AND A.Row = #{row}
+        </if>
+        <if test="convNm != null and convNm != '' and convNm">
+            AND A.ConvNm = #{convNm}
+        </if>
+        <if test="rows != null and rows">
+            AND A.Row IN 
+            <foreach collection="rows" item="r" open="(" separator="," close=")"> 
+                #{r}
+            </foreach>
+        </if>
+        <if test="tempPartNo != null and tempPartNo != '' and tempPartNo">
+            AND A.TempPartNo = #{tempPartNo}
+        </if>
+        <if test="tempPartNos != null and tempPartNos">
+            AND A.TempPartNo IN 
+            <foreach collection="tempPartNos" item="tp" open="(" separator="," close=")">
+                #{tp}
+            </foreach>
+        </if>
+    </select>
+
+    <update id="delFile" parameterType="HttpFile">
+        UPDATE T_DFILE
+        SET DeleteDt = GETDATE(),
+            DeleteUs = #{deleteUs}
+        WHERE FileOID = #{fileOid}
+    </update>
+
+    <!-- File History (T_DFILE_HISTORY) -->
+    <insert id="insDFileHistory" parameterType="DFileHistory">
+        <selectKey statementType="PREPARED" resultType="int" keyProperty="seq" order="BEFORE">
+            SELECT ISNULL(MAX(SEQ),0) + 1 AS SEQ FROM T_DFILE_HISTORY
+        </selectKey>
+        INSERT INTO T_DFILE_HISTORY
+        (
+            SEQ,
+            FileOID,
+            ActionType,
+            ActionUser,
+            ActionIPAddress,
+            ActionMacAddress,
+            SessionID,
+            ActionDt,
+            Description
+        )
+        VALUES
+        (
+            #{seq},
+            #{fileOid},
+            #{actionType},
+            #{actionUser},
+            #{actionIpAddress},
+            #{actionMacAddress},
+            #{sessionId},
+            GETDATE(),
+            #{description}
+        )
+    </insert>
+
+    <select id="selDFileHistory" parameterType="DFileHistory" resultType="DFileHistory">
+        SELECT 
+            A.SEQ AS seq,
+            A.FileOID AS fileOid,
+            A.ActionType AS actionType,
+            A.ActionUser AS actionUser,
+            D.Name AS actionUserNm,
+            A.ActionIPAddress AS actionIpAddress,
+            A.ActionDt AS actionDt,
+            A.ActionMacAddress AS actionMacAddress,
+            A.SessionID AS sessionId,
+            A.Description AS description,
+            B.OrgNm AS orgNm,
+            C.OID AS oid,
+            C.Name AS name,
+            C.Type AS type
+        FROM T_DFILE_HISTORY A
+        LEFT JOIN T_DFILE B ON A.FileOID = B.FileOID
+        LEFT JOIN V_DOBJECT C ON B.OID = C.OID
+        LEFT JOIN V_DOBJECT D ON A.ActionUser = D.OID
+        WHERE 1 = 1
+        <if test="oid != null and oid != '' and oid">
+            AND C.OID = #{oid}
+        </if>
+        <if test="type != null and type != '' and type">
+            AND C.Type = #{type}
+        </if>
+        <if test="fileOid != null and fileOid != '' and fileOid">
+            AND A.FileOID = #{fileOid}
+        </if>
+        <if test="actionUser != null and actionUser != '' and actionUser">
+            AND A.ActionUser = #{actionUser}
+        </if>
+    </select>
+
+
+
+
+    
+    <!-- Approval (T_DAPPROVAL) -->
+    <insert id="insApproval" parameterType="Approval">
+        INSERT INTO T_DAPPROVAL
+        (
+            OID,
+            TargetOID,
+            ApprovalCount,
+            Comment
+        )
+        VALUES
+        (
+            #{oid},
+            #{targetOID},
+            #{approvalCount},
+            #{comment}
+        )
+    </insert>
+
+    <select id="selApproval" parameterType="Approval" resultType="Approval">
+        SELECT *
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DAPPROVAL B ON A.OID = B.OID
+        WHERE A.DeleteDt IS NULL
+        <if test="oid != null">
+            AND A.OID = #{oid}
+        </if>
+        <if test="name != null and name != ''">
+            AND A.Name = #{name}
+        </if>
+        <if test="type != null and type != ''">
+            AND A.Type = #{type}
+        </if>
+        <if test="targetOID != null">
+            AND B.TargetOID = #{targetOID}
+        </if>
+        <if test="createUs != null">
+            AND A.CreateUs = #{createUs}
+        </if>
+        <if test="bpolicyOID != null">
+            AND A.BPolicyOID = #{bpolicyOID}
+        </if>
+        <if test="oids != null and oids.size() > 0">
+            AND A.OID IN
+            <foreach collection="oids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        ORDER BY B.OID
+    </select>
+
+    <update id="udtApproval" parameterType="Approval">
+        UPDATE T_DAPPROVAL
+        <set>
+            <if test="targetOID != null">
+                TargetOID = #{targetOID},
+            </if>
+            <if test="approvalCount != null">
+                ApprovalCount = #{approvalCount},
+            </if>
+            <if test="comment != null and comment != ''">
+                Comment = #{comment},
+            </if>
+            <if test="currentNum != null">
+                CurrentNum = #{currentNum},
+            </if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- ApprovalStep (T_DAPPROVAL_STEP) -->
+    <insert id="insApprovalStep" parameterType="ApprovalStep">
+        <selectKey statementType="PREPARED" resultType="int" keyProperty="oid" order="BEFORE">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DAPPROVAL_STEP
+        </selectKey>
+        INSERT INTO T_DAPPROVAL_STEP
+        (
+            OID,
+            ApprovalOID,
+            Ord,
+            ApprovalType
+        )
+        VALUES
+        (
+            #{oid},
+            #{approvalOID},
+            (SELECT ISNULL(MAX(ORD),0) + 1 AS ORD FROM T_DAPPROVAL_STEP WHERE ApprovalOID = #{approvalOID}),
+            #{approvalType}
+        )
+    </insert>
+
+    <select id="selApprovalStep" parameterType="ApprovalStep" resultType="ApprovalStep">
+        SELECT *
+        FROM T_DAPPROVAL_STEP
+        <where>
+            <if test="oid != null">
+                OID = #{oid}
+            </if>
+            <if test="approvalOID != null">
+                ApprovalOID = #{approvalOID}
+            </if>
+            <if test="approvalType != null and approvalType != ''">
+                ApprovalType = #{approvalType}
+            </if>
+        </where>
+        ORDER BY Ord
+    </select>
+
+    <!-- ApprovalTask (T_DAPPROVAL_TASK) -->
+    <insert id="insApprovalTask" parameterType="ApprovalTask">
+        INSERT INTO T_DAPPROVAL_TASK
+        (
+            OID,
+            ApprovalOID,
+            StepOID,
+            PersonOID,
+            ApprovalType,
+            Comment
+        )
+        VALUES
+        (
+            #{oid},
+            #{approvalOID},
+            #{stepOID},
+            #{personOID},
+            #{approvalType},
+            #{comment}
+        )
+    </insert>
+
+    <select id="selApprovalTask" parameterType="ApprovalTask" resultType="ApprovalTask">
+        SELECT *
+        FROM T_DOBJECT A
+        LEFT OUTER JOIN T_DAPPROVAL_TASK B ON A.OID = B.OID
+        WHERE A.DeleteDt IS NULL
+        <if test="oid != null">
+            AND A.OID = #{oid}
+        </if>
+        <if test="name != null and name != ''">
+            AND A.Name = #{name}
+        </if>
+        <if test="type != null and type != ''">
+            AND A.Type = #{type}
+        </if>
+        <if test="approvalOID != null">
+            AND B.ApprovalOID = #{approvalOID}
+        </if>
+        <if test="stepOID != null">
+            AND B.StepOID = #{stepOID}
+        </if>
+        <if test="personOID != null">
+            AND B.PersonOID = #{personOID}
+        </if>
+    </select>
+
+    <select id="selMyApprovalTask" parameterType="ApprovalTask" resultType="ApprovalTask">
+        SELECT A.*, B.*,
+               H.Description AS Description,
+               E.OID AS DocOID,
+               E.Type AS DocType,
+               E.Name AS DocNm,
+               E.CreateUs AS DocCreateUs,
+               F.Name AS DocCreateNm,
+               G.LINK AS DocUrl
+        FROM T_DAPPROVAL_TASK A
+        LEFT OUTER JOIN T_DOBJECT B ON A.OID = B.OID
+        LEFT OUTER JOIN T_DAPPROVAL C ON A.ApprovalOID = C.OID
+        LEFT OUTER JOIN T_DOBJECT H ON C.OID = H.OID
+        LEFT OUTER JOIN T_DAPPROVAL_STEP D ON A.StepOID = D.OID
+        LEFT OUTER JOIN T_DOBJECT E ON C.TargetOID = E.OID
+        LEFT OUTER JOIN T_DOBJECT F ON F.OID = E.CreateUs
+        LEFT OUTER JOIN T_BDEFINE G ON G.TYPE = 'TYPE' AND G.NAME = E.TYPE
+        WHERE B.DeleteDt IS NULL AND E.OID IS NOT NULL AND A.ApprovalType != 'DIST'
+        <if test="createUs != null">
+            AND B.CreateUs = #{createUs}
+        </if>
+        <if test="personOID != null">
+            AND A.PersonOID = #{personOID}
+        </if>
+        <if test="bpolicyOID != null">
+            AND B.BPolicyOID = #{bpolicyOID}
+        </if>
+    </select>
+
+    <select id="selMyPayingApproval" parameterType="Approval" resultType="Approval">
+        SELECT DISTINCT
+            A.*
+            , B.Name
+            , B.Type
+            , B.Description
+            , B.TableNm
+            , B.CreateDt
+            , B.CreateUs
+            , B.ModifyDt
+            , B.ModifyUs
+            , B.DeleteDt
+            , B.DeleteUs
+            , D.OID AS DocOID
+            , D.Type AS DocType
+            , D.Name AS DocNm
+            , D.CreateUs AS DocCreateUs
+            , E.LINK AS DocUrl
+            , A.OID AS ApprovalOID
+        FROM T_DAPPROVAL A
+        LEFT OUTER JOIN T_DOBJECT B ON A.OID = B.OID
+        LEFT OUTER JOIN T_DAPPROVAL_TASK C ON A.OID = C.ApprovalOID
+        LEFT OUTER JOIN T_DOBJECT D ON A.TargetOID = D.OID
+        LEFT OUTER JOIN T_BDEFINE E ON E.TYPE = 'TYPE' AND E.NAME = D.TYPE
+        WHERE B.DeleteDt IS NULL
+        AND  C.ApprovalType != 'DIST'
+        AND (B.CreateUs = #{createUs} OR C.PersonOID = #{personOID})
+        <if test="bpolicyOID != null">
+            AND B.BPolicyOID = #{bpolicyOID}
+        </if>
+    </select>
+
+    <select id="selMyPayingApprovalTask" parameterType="ApprovalTask" resultType="ApprovalTask">
+        SELECT A.*, B.*,
+               H.Description AS Description,
+               E.OID AS DocOID,
+               E.Type AS DocType,
+               E.Name AS DocNm,
+               E.CreateUs AS DocCreateUs,
+               F.Name AS DocCreateNm,
+               G.LINK AS DocUrl,
+               H.BPolicyOID AS ApprovalBPolicyOID
+        FROM T_DAPPROVAL_TASK A
+        LEFT OUTER JOIN T_DOBJECT B ON A.OID = B.OID
+        LEFT OUTER JOIN T_DAPPROVAL C ON A.ApprovalOID = C.OID
+        LEFT OUTER JOIN T_DOBJECT H ON C.OID = H.OID
+        LEFT OUTER JOIN T_DAPPROVAL_STEP D ON A.StepOID = D.OID
+        LEFT OUTER JOIN T_DOBJECT E ON C.TargetOID = E.OID
+        LEFT OUTER JOIN T_DOBJECT F ON F.OID = E.CreateUs
+        LEFT OUTER JOIN T_BDEFINE G ON G.TYPE = 'TYPE' AND G.NAME = E.TYPE
+        WHERE B.DeleteDt IS NULL AND E.OID IS NOT NULL AND A.ApprovalType != 'DIST'
+        AND (B.CreateUs = #{createUs} OR A.PersonOID = #{personOID})
+        <if test="bpolicyOID != null">
+            AND B.BPolicyOID = #{bpolicyOID}
+        </if>
+    </select>
+
+    <update id="udtInboxTask" parameterType="ApprovalTask">
+        UPDATE T_DAPPROVAL_TASK SET
+        <set>
+            <if test="actionType != null and actionType != ''">
+                ActionType = #{actionType},
+                ApprovalDt = GETDATE(),
+            </if>
+            <if test="comment != null">
+                Comment = #{comment},
+            </if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <!-- ApprovalComment (T_DAPPROVAL_COMMENT) -->
+    <insert id="insApprovalComment" parameterType="ApprovalComment">
+        <selectKey statementType="PREPARED" resultType="int" keyProperty="oid" order="BEFORE">
+            SELECT ISNULL(MAX(OID),0) + 1 AS OID FROM T_DAPPROVAL_COMMENT
+        </selectKey>
+        INSERT INTO T_DAPPROVAL_COMMENT
+        (
+            OID,
+            ApprovalOID,
+            Comment,
+            Ord,
+            CreateDt,
+            CreateUs
+        )
+        VALUES
+        (
+            #{oid},
+            #{approvalOID},
+            #{comment},
+            (SELECT ISNULL(MAX(Ord),0) + 1 AS ORD FROM T_DAPPROVAL_COMMENT WHERE ApprovalOID = #{approvalOID}),
+            GETDATE(),
+            #{createUs}
+        )
+    </insert>
+
+    <select id="selApprovalComment" parameterType="ApprovalComment" resultType="ApprovalComment">
+        SELECT *
+        FROM T_DAPPROVAL_COMMENT
+        WHERE DeleteDt IS NULL
+        <if test="oid != null">
+            AND OID = #{oid}
+        </if>
+        <if test="approvalOID != null">
+            AND ApprovalOID = #{approvalOID}
+        </if>
+        ORDER BY Ord
+    </select>
+
+    <update id="udtApprovalComment" parameterType="ApprovalComment">
+        UPDATE T_DAPPROVAL_COMMENT
+        <set>
+            <if test="comment != null">Comment = #{comment},</if>
+        </set>
+        WHERE OID = #{oid}
+    </update>
+
+    <update id="delApprovalComment" parameterType="ApprovalComment">
+        UPDATE T_DAPPROVAL_COMMENT
+        SET DeleteUs = #{deleteUs},
+            DeleteDt = GETDATE()
+        WHERE OID = #{oid}
+    </update>
+
+</mapper>

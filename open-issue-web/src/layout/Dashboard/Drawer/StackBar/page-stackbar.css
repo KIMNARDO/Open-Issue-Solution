@@ -1,0 +1,34 @@
+.stack-menu-swiper {
+  position: relative;
+  padding: 0 40px;
+}
+
+.stack-menu-swiper .swiper-button-next {
+  color: #1976d2;
+  background: #fff;
+  right: 0;
+
+  border-radius: 10%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.stack-menu-swiper .swiper-button-prev {
+  color: #1976d2;
+  background: #fff;
+  left: 0;
+  border: 1px solid #e0e0e0;
+
+  border-radius: 10%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stack-menu-swiper .swiper-button-next:hover,
+.stack-menu-swiper .swiper-button-prev:hover {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.stack-menu-swiper .swiper-button-next:after,
+.stack-menu-swiper .swiper-button-prev:after {
+  font-size: 18px;
+  font-weight: bold;
+}
