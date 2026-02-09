@@ -11,6 +11,19 @@ wooryplm-api-master/
 # Temporary files
 fix_all.py
 CLAUDE.md
+nul
+
+# Screenshots (개발 중 캡처 이미지)
+*.png
+!open-issue-web/src/assets/images/**/*.png
+!open-issue-web/public/**/*.png
+
+# Office files (업무 문서)
+*.xlsx
+*.pptx
+
+# PPTX workspace (프레젠테이션 작업 폴더)
+open-issue-web/pptx-workspace/
 
 # Dependencies
 node_modules/
