@@ -10,6 +10,8 @@ import CategoryAnalysisChart from './components/CategoryAnalysisChart';
 import QuickActionsPanel from './components/QuickActionsPanel';
 import RecentActivityFeed from './components/RecentActivityFeed';
 import IssuePipelineGrid from './components/IssuePipelineGrid';
+import GlobalPlantMap from './components/GlobalPlantMap';
+import LiveTickerBar from './components/LiveTickerBar';
 import { useDashboardData } from './hooks/useDashboardData';
 
 const FIGMA_EASING = 'cubic-bezier(0.46, 0.03, 0.52, 0.96)';
@@ -23,7 +25,10 @@ const Dashboard = () => {
     monthlyTrendData,
     categoryWeeklyData,
     pipelineIssues,
-    recentActivities
+    recentActivities,
+    plantLocations,
+    tickerItems,
+    allIssues
   } = useDashboardData();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -113,9 +118,12 @@ const Dashboard = () => {
           </Box>
         </Box>
 
-        {/* ===== 2. KPI Cards ===== */}
+        {/* ===== 1.5. Live Ticker Bar ===== */}
+        <LiveTickerBar items={tickerItems} />
+
+        {/* ===== 2. KPI Cards + World Map ===== */}
         <Grid container spacing={2} mb={2.5}>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
             <StatCard
               title={formatMessage({ id: 'dash-total-issues' })}
               value={stats.total}
@@ -126,7 +134,7 @@ const Dashboard = () => {
               sparklineData={sparklines.total}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
             <StatCard
               title={formatMessage({ id: 'dash-resolution-rate' })}
               value={completionRate}
@@ -142,7 +150,7 @@ const Dashboard = () => {
               sparklineData={sparklines.closed}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
             <StatCard
               title={formatMessage({ id: 'dash-delayed-issues' })}
               value={stats.delayed}
@@ -154,7 +162,7 @@ const Dashboard = () => {
               sparklineData={sparklines.delayed}
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={12} sm={6} md={2.4}>
             <StatCard
               title={formatMessage({ id: 'dash-pending-issues' })}
               value={stats.pending}
@@ -164,6 +172,10 @@ const Dashboard = () => {
               subtitle={formatMessage({ id: 'dash-in-progress' })}
               sparklineData={sparklines.open}
             />
+          </Grid>
+          {/* World Map Card — 확대 버튼으로 Dialog 열림 */}
+          <Grid item xs={12} sm={6} md={2.4}>
+            <GlobalPlantMap plants={plantLocations} issues={allIssues} />
           </Grid>
         </Grid>
 

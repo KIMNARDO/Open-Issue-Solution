@@ -89,3 +89,29 @@ export interface DashboardActivity {
   issueNo: string;
   color: string;
 }
+
+// 실시간 이슈 티커 데이터
+export interface TickerItem {
+  id: number;
+  type: 'urgent' | 'discussing' | 'dev-critical' | 'delayed' | 'resolved';
+  issueNo: string;
+  message: string;
+  team: string;
+  plant: string;
+  importance: string;
+  timestamp: string;
+}
+
+// 공장/플랜트 위치 데이터
+export interface PlantLocation {
+  id: string;
+  name: string;
+  nameKey: string;
+  country: string;
+  coordinates: [number, number]; // [longitude, latitude]
+  issueCount: number;
+  openCount: number;
+  delayedCount: number;
+  criticalCount: number;
+  status: 'normal' | 'warning' | 'critical';
+}

@@ -15,7 +15,9 @@ import {
   RecentIssueItem,
   CategoryWeeklyData,
   PipelineIssueItem,
-  DashboardActivity
+  DashboardActivity,
+  PlantLocation,
+  TickerItem
 } from '../dashboard.types';
 
 dayjs.extend(relativeTime);
@@ -52,6 +54,18 @@ const DEPT_MAP: Record<number, { name: string; nameKey: string }> = {
   6: { name: '생산팀', nameKey: 'dept-production' },
   7: { name: 'IT팀', nameKey: 'dept-it' },
   8: { name: '해외법인', nameKey: 'dept-overseas' }
+};
+
+// 공장 좌표 매핑 (productionSite → 위치 정보)
+const PLANT_COORDINATES: Record<string, { name: string; nameKey: string; country: string; coordinates: [number, number] }> = {
+  '본사': { name: '본사 (Korea HQ)', nameKey: 'plant-korea-hq', country: 'Korea', coordinates: [128.6, 35.9] },
+  '한국': { name: '한국', nameKey: 'plant-korea', country: 'Korea', coordinates: [127.0, 37.5] },
+  '인도': { name: '인도법인 (WII)', nameKey: 'plant-india-wii', country: 'India', coordinates: [77.2, 28.6] },
+  '중국': { name: '중국법인 (WRC)', nameKey: 'plant-china-wrc', country: 'China', coordinates: [121.5, 31.2] },
+  '일본': { name: '일본 사무소', nameKey: 'plant-japan', country: 'Japan', coordinates: [139.7, 35.7] },
+  '태국': { name: '태국법인 (WRT)', nameKey: 'plant-thailand', country: 'Thailand', coordinates: [100.5, 13.8] },
+  '유럽': { name: '유럽 사무소', nameKey: 'plant-europe', country: 'France', coordinates: [2.35, 48.86] },
+  '해외': { name: '해외 거점', nameKey: 'plant-overseas', country: 'Singapore', coordinates: [103.8, 1.35] }
 };
 
 // 카테고리 분류
@@ -268,6 +282,135 @@ export function useDashboardData() {
       }));
   }, [allIssues]);
 
+  // 실시간 이슈 티커 데이터 (긴급/협의중/개발핵심/지연/해결)
+  const tickerItems: TickerItem[] = useMemo(() => {
+    const items: TickerItem[] = [];
+
+    // 1. 긴급 이슈 (importance=5, 진행중)
+    allIssues
+      .filter((i) => i.importance === '5' && !isClosed(i))
+      .forEach((issue) => {
+        items.push({
+          id: issue.oid,
+          type: 'urgent',
+          issueNo: issue.issueNo || '',
+          message: (issue.description || issue.contents || '').split('\n')[0].substring(0, 50),
+          team: issue.managerTeam || '',
+          plant: issue.productionSite || '',
+          importance: issue.importance,
+          timestamp: issue.strDt
+        });
+      });
+
+    // 2. 협의중 이슈 (대기 상태 = 관련부서 협의 진행)
+    allIssues
+      .filter(isPending)
+      .slice(0, 5)
+      .forEach((issue) => {
+        items.push({
+          id: issue.oid,
+          type: 'discussing',
+          issueNo: issue.issueNo || '',
+          message: (issue.description || issue.contents || '').split('\n')[0].substring(0, 50),
+          team: issue.managerTeam || '',
+          plant: issue.productionSite || '',
+          importance: issue.importance,
+          timestamp: issue.strDt
+        });
+      });
+
+    // 3. 개발 핵심 이슈 (importance=3~4, DEV 타입, 진행중)
+    allIssues
+      .filter((i) => ['3', '4'].includes(i.importance) && i.openIssueType === 'DEV' && isOpen(i))
+      .slice(0, 5)
+      .forEach((issue) => {
+        items.push({
+          id: issue.oid,
+          type: 'dev-critical',
+          issueNo: issue.issueNo || '',
+          message: (issue.description || issue.contents || '').split('\n')[0].substring(0, 50),
+          team: issue.managerTeam || '',
+          plant: issue.productionSite || '',
+          importance: issue.importance,
+          timestamp: issue.strDt
+        });
+      });
+
+    // 4. 지연 이슈 (심각도 상위 5건)
+    allIssues
+      .filter(isDelayed)
+      .sort((a, b) => (calculateDelay(b) || 0) - (calculateDelay(a) || 0))
+      .slice(0, 5)
+      .forEach((issue) => {
+        items.push({
+          id: issue.oid,
+          type: 'delayed',
+          issueNo: issue.issueNo || '',
+          message: (issue.description || issue.contents || '').split('\n')[0].substring(0, 50),
+          team: issue.managerTeam || '',
+          plant: issue.productionSite || '',
+          importance: issue.importance,
+          timestamp: issue.finDt
+        });
+      });
+
+    // 5. 최근 해결 이슈 (완료 상위 3건)
+    allIssues
+      .filter(isClosed)
+      .sort((a, b) => dayjs(b.closeDt).unix() - dayjs(a.closeDt).unix())
+      .slice(0, 3)
+      .forEach((issue) => {
+        items.push({
+          id: issue.oid,
+          type: 'resolved',
+          issueNo: issue.issueNo || '',
+          message: (issue.description || issue.contents || '').split('\n')[0].substring(0, 50),
+          team: issue.managerTeam || '',
+          plant: issue.productionSite || '',
+          importance: issue.importance,
+          timestamp: issue.closeDt || issue.finDt
+        });
+      });
+
+    return items;
+  }, [allIssues]);
+
+  // 공장별 이슈 집계 (세계 지도용)
+  const plantLocations: PlantLocation[] = useMemo(() => {
+    const plantMap: Record<string, OpenIssueType[]> = {};
+    allIssues.forEach((issue) => {
+      const site = issue.productionSite || '';
+      if (!site) return;
+      if (!plantMap[site]) plantMap[site] = [];
+      plantMap[site].push(issue);
+    });
+
+    return Object.entries(plantMap)
+      .filter(([site]) => PLANT_COORDINATES[site])
+      .map(([site, issues]) => {
+        const coords = PLANT_COORDINATES[site];
+        const openCount = issues.filter((i) => isOpen(i) || isPending(i)).length;
+        const delayedCount = issues.filter(isDelayed).length;
+        const criticalCount = issues.filter((i) => i.importance === '5').length;
+        let status: 'normal' | 'warning' | 'critical' = 'normal';
+        if (criticalCount > 0) status = 'critical';
+        else if (delayedCount > 0) status = 'warning';
+        return {
+          id: site,
+          name: coords.name,
+          nameKey: coords.nameKey,
+          country: coords.country,
+          coordinates: coords.coordinates,
+          issueCount: issues.length,
+          openCount,
+          delayedCount,
+          criticalCount,
+          status
+        };
+      })
+      .sort((a, b) => b.issueCount - a.issueCount);
+  }, [allIssues]);
+
   return {
     isLoading,
     stats,
@@ -281,6 +424,8 @@ export function useDashboardData() {
     recentActivities,
     delayedIssues,
     recentIssues,
-    allIssues
+    allIssues,
+    plantLocations,
+    tickerItems
   };
 }
