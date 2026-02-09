@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Box, useTheme } from '@mui/material';
 import { CustomCellRendererProps } from 'ag-grid-react';
 import IconButton from 'components/@extended/IconButton';
-import { OpenIssueType } from 'pages/qms/open-issue';
+import { OpenIssueType } from 'pages/qms/qms/open-issue';
 
 interface OpenIssueEtcStatusRendererProps extends CustomCellRendererProps {
   onFileClick?: (data: OpenIssueType) => void;

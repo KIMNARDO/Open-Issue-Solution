@@ -54,3 +54,5 @@ export const useRemoveComment = () => useMutation(mutationOptions.removeComment(
 export const useRegistComment = () => useMutation(mutationOptions.registComment());
 
 export const useUpdateComment = () => useMutation(mutationOptions.updateComment());
+
+export const useActivityLog = (issueOid: number) => useQuery(queryOptions.activityLog(issueOid));

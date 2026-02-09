@@ -1,6 +1,6 @@
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react';
 import { initStyles, setColDef } from './gridUtils';
-import { AG_GRID_LOCALE_KR } from '@ag-grid-community/locale';
+import { AG_GRID_LOCALE_KR, AG_GRID_LOCALE_EN } from '@ag-grid-community/locale';
 import {
   ColDef,
   themeQuartz,
@@ -28,6 +28,8 @@ import { v4 } from 'uuid';
 import { useGridStateStore } from 'store/gridState.store';
 import { ExColDef } from './grid.types';
 import { gridIconOverrides } from './iconOverride';
+import useConfig from 'hooks/useConfig';
+import { useIntl } from 'react-intl';
 
 const customComparator = (gridRef: Ref<AgGridReact<any>>, col: ExColDef) => {
   return (
@@ -37,6 +39,11 @@ const customComparator = (gridRef: Ref<AgGridReact<any>>, col: ExColDef) => {
     nodeB: IRowNode<any>,
     _isDescending: boolean
   ): number => {
+    // 노드가 없거나 그룹 노드인 경우 기본 정렬
+    if (!nodeA || !nodeB || !nodeA.data || !nodeB.data) {
+      return 0;
+    }
+
     if (gridRef && 'current' in gridRef) {
       if (col.cellDataType === 'number') {
         if (!_valueA && _valueB) return -1;
@@ -56,17 +63,31 @@ const customComparator = (gridRef: Ref<AgGridReact<any>>, col: ExColDef) => {
         return col.context?.comparator?.(aObj, bObj) || 0;
       }
 
-      const aCellValue = gridRef.current?.api.getCellValue({ rowNode: nodeA, colKey: col.field || '', useFormatter: true })?.toString();
-      const bCellValue = gridRef.current?.api.getCellValue({ rowNode: nodeB, colKey: col.field || '', useFormatter: true })?.toString();
-      if (!aCellValue && bCellValue) return 1;
+      // API가 준비되지 않은 경우 값 직접 비교
+      if (!gridRef.current?.api) {
+        const aVal = _valueA?.toString() || '';
+        const bVal = _valueB?.toString() || '';
+        return aVal.localeCompare(bVal);
+      }
 
-      if (aCellValue && !bCellValue) return -1;
+      try {
+        const aCellValue = gridRef.current.api.getCellValue({ rowNode: nodeA, colKey: col.field || '', useFormatter: true })?.toString();
+        const bCellValue = gridRef.current.api.getCellValue({ rowNode: nodeB, colKey: col.field || '', useFormatter: true })?.toString();
+        if (!aCellValue && bCellValue) return 1;
 
-      if (!aCellValue && !bCellValue) return 0;
+        if (aCellValue && !bCellValue) return -1;
 
-      if (aCellValue === bCellValue) return 0;
-      if (!aCellValue || !bCellValue) return 0;
-      return aCellValue > bCellValue ? 1 : -1;
+        if (!aCellValue && !bCellValue) return 0;
+
+        if (aCellValue === bCellValue) return 0;
+        if (!aCellValue || !bCellValue) return 0;
+        return aCellValue > bCellValue ? 1 : -1;
+      } catch {
+        // getCellValue 오류 시 값 직접 비교
+        const aVal = _valueA?.toString() || '';
+        const bVal = _valueB?.toString() || '';
+        return aVal.localeCompare(bVal);
+      }
     } else {
       return 0;
     }
@@ -150,9 +171,14 @@ const excelBorders: ExcelBorders = {
 const defaultColDef: ColDef = {
   wrapHeaderText: true,
   autoHeaderHeight: true,
-  suppressHeaderMenuButton: true,
+  suppressHeaderMenuButton: false, // 필터 메뉴 버튼 활성화 (Smartsheet 스타일)
   suppressSizeToFit: false,
-  unSortIcon: false
+  unSortIcon: false,
+  floatingFilter: false, // 필요시 true로 설정하여 헤더 아래 필터 입력창 표시
+  filterParams: {
+    buttons: ['reset', 'apply'],
+    closeOnApply: true
+  }
 };
 
 const defaultExcelStyle: ExcelStyle[] = [
@@ -211,6 +237,22 @@ const CommonGrid = forwardRef(
       palette,
       typography: { fontFamily, subtitle1 }
     } = useTheme();
+    const { i18n } = useConfig();
+    const { formatMessage } = useIntl();
+
+    // 언어에 따른 AG Grid 로케일 선택
+    const agGridLocale = useMemo(() => {
+      return i18n === 'en' ? AG_GRID_LOCALE_EN : AG_GRID_LOCALE_KR;
+    }, [i18n]);
+
+    // 번역된 메시지
+    const translatedMessages = useMemo(() => ({
+      pinToColumn: formatMessage({ id: 'grid-pin-to-column' }),
+      unpinAll: formatMessage({ id: 'grid-unpin-all' }),
+      selectRow: formatMessage({ id: 'grid-select-row' }),
+      noResult: formatMessage({ id: 'grid-no-result' }),
+      invalidFormat: formatMessage({ id: 'msg-invalid-format' })
+    }), [formatMessage]);
     const borderStyle: BorderValue = { width: 1, style: 'solid', color: palette.grey[300] };
     useEffect(() => {
       setDarkMode(palette.mode);
@@ -235,13 +277,13 @@ const CommonGrid = forwardRef(
       }
     }, []);
 
-    const getMainMenuItems = (params: GetMainMenuItemsParams): (DefaultMenuItem | MenuItemDef)[] => {
+    const getMainMenuItems = useCallback((params: GetMainMenuItemsParams): (DefaultMenuItem | MenuItemDef)[] => {
       const prev = gridProps.getMainMenuItems ? gridProps.getMainMenuItems(params) : params.defaultItems;
 
       return [
         ...prev,
         {
-          name: '해당 열까지 고정',
+          name: translatedMessages.pinToColumn,
           action: ({ api, column }) => {
             const targetCol = column?.getColDef().field || '';
 
@@ -264,7 +306,7 @@ const CommonGrid = forwardRef(
           disabled: !params.column
         },
         {
-          name: '열 고정 전체 해제',
+          name: translatedMessages.unpinAll,
           action: ({ api }) => {
             const pinned =
               api.getColumnDefs()?.map((el) => {
@@ -274,7 +316,7 @@ const CommonGrid = forwardRef(
           }
         }
       ];
-    };
+    }, [translatedMessages, gridProps.getMainMenuItems]);
 
     const dataTypeDefinitions: {
       [cellDataType: string]: DataTypeDefinition<any>;
@@ -330,6 +372,27 @@ const CommonGrid = forwardRef(
           '& .rep-row': { border: '2px solid', borderColor: palette.primary.main },
           '& .disabled-row': { background: 'rgba(0,0,0,.2) !important' },
           '& .rep-row2': { outlineStyle: 'solid', outlineOffset: -2, outlineWidth: 2, outlineColor: palette.primary.main },
+          // Smartsheet 스타일 - 완료된 행
+          '& .completed-row': {
+            background: 'rgba(0,0,0,.15) !important',
+            opacity: 0.7,
+            '& .ag-cell': { color: palette.grey[500] }
+          },
+          // Smartsheet 스타일 - 지연된 행 (연한 빨간 배경)
+          '& .delayed-row': {
+            background: 'rgba(244, 67, 54, 0.08) !important',
+            '&:hover': { background: 'rgba(244, 67, 54, 0.12) !important' }
+          },
+          // Smartsheet 스타일 - 긴급 이슈 (좌측 빨간 보더)
+          '& .urgent-row': {
+            borderLeft: '4px solid #f44336 !important',
+            '& .ag-cell:first-of-type': { paddingLeft: '8px' }
+          },
+          // Smartsheet 스타일 - 지시사항 (좌측 보라 보더)
+          '& .instruction-row': {
+            borderLeft: '4px solid #7b1fa2 !important',
+            '& .ag-cell:first-of-type': { paddingLeft: '8px' }
+          },
           '&': { '--ag-value-change-value-highlight-background-color': palette.primary.light },
           '& .ag-header-cell.required .ag-header-cell-label': { color: palette.primary.main },
           '& .ag-sort-indicator-icon': { display: 'flex', justifyContent: 'center', alignItems: 'center' }
@@ -361,7 +424,7 @@ const CommonGrid = forwardRef(
               handle: { mode: 'fill' }
             }}
             selectionColumnDef={{ minWidth: 35, maxWidth: 35, lockPinned: true, pinned: 'left', ...gridProps.selectionColumnDef }}
-            localeText={AG_GRID_LOCALE_KR}
+            localeText={agGridLocale}
             icons={gridIconOverrides}
             theme={themeQuartz.withParams({
               wrapperBorderRadius: '5px 5px 5px 5px',
@@ -385,7 +448,7 @@ const CommonGrid = forwardRef(
               pinnedRowBorder: { style: 'solid', width: 2, color: palette.grey.A800 },
               ...theme
             })}
-            noRowsOverlayComponent={() => (requiredRow ? requiredRowMsg : noDataMsg)}
+            noRowsOverlayComponent={() => (requiredRow ? translatedMessages.selectRow : translatedMessages.noResult)}
             columnDefs={gridProps.columnDefs?.map((el) => {
               if ('children' in el) {
                 // customComparator

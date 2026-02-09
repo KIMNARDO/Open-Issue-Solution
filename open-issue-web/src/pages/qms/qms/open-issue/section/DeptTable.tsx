@@ -11,7 +11,8 @@ import {
   faPen
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Box, IconButton, TextField, Tooltip } from '@mui/material';
+import { Box, IconButton, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import { LayoutList, LayoutGrid, FileText } from 'lucide-react';
 import { AgGridReact } from 'ag-grid-react';
 import CommonButton from 'components/buttons/CommonButton';
 import { withSimpleSearchForm } from 'components/form/SimpleForm';
@@ -42,8 +43,11 @@ import { CommonFile } from 'api/file/file.types';
 import ExcelUploadDialog from 'dialogs/ExcelUploadDialog';
 import useLibrary from 'hooks/useLibrary';
 import FileUploadDrawer, { FileUploadDrawerRef } from 'components/drawer/FileUploadDrawer';
+import QuickFilterChips from 'components/grid/QuickFilterChips';
+import KanbanBoard from './KanbanBoard';
+import MeetingSummaryDrawer, { MeetingSummaryDrawerRef } from 'components/drawer/MeetingSummaryDrawer';
 
-const TooltipContent = () => {
+const TooltipContent = ({ label }: { label: string }) => {
   return (
     <>
       <Box display={'flex'} alignItems={'center'}>
@@ -55,7 +59,7 @@ const TooltipContent = () => {
             display: 'inline-block'
           }}
         />
-        <span> : 필수입력</span>
+        <span> : {label}</span>
       </Box>
     </>
   );
@@ -85,7 +89,7 @@ const Toolbar = withSimpleSearchForm<any, { loadingState: Record<string, boolean
         size="small"
       />
       <CommonButton
-        title="검색"
+        title={formatMessage({ id: 'btn-search' })}
         variant="standard"
         icon={<FontAwesomeIcon icon={faSearch} />}
         onClick={() => {
@@ -95,14 +99,14 @@ const Toolbar = withSimpleSearchForm<any, { loadingState: Record<string, boolean
         size="small"
       />
       <CommonButton
-        title="엑셀업로드"
+        title={formatMessage({ id: 'btn-excel-upload' })}
         variant="outlined"
         icon={<FontAwesomeIcon icon={faCloudUpload} />}
         onClick={btnActions.excelUpload}
         size="small"
       />
       <CommonButton
-        title="템플릿 다운로드"
+        title={formatMessage({ id: 'btn-template-download' })}
         variant="outlined"
         icon={<FontAwesomeIcon icon={faPaperclip} />}
         onClick={btnActions.templateDownload}
@@ -143,6 +147,8 @@ const Toolbar = withSimpleSearchForm<any, { loadingState: Record<string, boolean
   );
 });
 
+type ViewMode = 'grid' | 'kanban';
+
 const DeptTable = ({
   selectedGroup,
   selectedTeam,
@@ -158,6 +164,7 @@ const DeptTable = ({
   // const [isInit, setIsInit] = useState(true);
   const [searchParam, setSearchParam] = useState<any>();
   const [targetIssue, setTargetIssue] = useState<OpenIssueType>();
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const gridId = `deptOIL-${selectedTeam}`;
 
   const queryClient = useQueryClient();
@@ -167,6 +174,7 @@ const DeptTable = ({
   const toolbarRef = useRef<FormikProps<any>>(null);
   const issueCommentDrawerRef = useRef<IssueCommentDrawerRef>(null);
   const fileUploadDrawerRef = useRef<FileUploadDrawerRef>(null);
+  const meetingSummaryDrawerRef = useRef<MeetingSummaryDrawerRef>(null);
   const { BasicDialog: ExcelUploadDialogBase, handleClose: closeExcelUploadDialog, handleOpen: openExcelUploadDialog } = useBasicDialog();
 
   const { formatMessage } = useIntl();
@@ -235,7 +243,7 @@ const DeptTable = ({
   const handleAddIssue = () => {
     if (!groupGridRef.current?.api) return;
     if (!selectedGroup || selectedGroup.length < 1) {
-      commonNotification.warn('그룹을 선택해주세요.');
+      commonNotification.warn(formatMessage({ id: 'msg-select-group' }));
       return;
     }
     // const rowCnt = getAllRows(groupGridRef.current.api).length;
@@ -248,11 +256,11 @@ const DeptTable = ({
   const handleSaveIssue = () => {
     updateGridState();
     if (!selectedGroup || selectedGroup.length < 1) {
-      commonNotification.warn('그룹을 선택해주세요.');
+      commonNotification.warn(formatMessage({ id: 'msg-select-group' }));
       return;
     }
     if (getUpdatedRows().length < 1) {
-      commonNotification.warn('수정된 데이터가 없습니다.');
+      commonNotification.warn(formatMessage({ id: 'msg-no-modified-data' }));
       return;
     }
     updateOpenIssue(
@@ -265,7 +273,7 @@ const DeptTable = ({
       }),
       {
         onSuccess: () => {
-          commonNotification.success('저장되었습니다');
+          commonNotification.success(formatMessage({ id: 'msg-saved' }));
           queryClient.invalidateQueries({ queryKey: queryKeys.openIssueMenu(selectedPlace) });
           refetch().then(() => {
             groupGridRef.current?.api.refreshClientSideRowModel();
@@ -279,19 +287,19 @@ const DeptTable = ({
   const handleDeleteIssue = async () => {
     const selectedRows = getSelectedRows();
     if (selectedRows.length < 1) {
-      commonNotification.warn('삭제할 이슈를 선택해주세요.');
+      commonNotification.warn(formatMessage({ id: 'msg-select-issue-delete' }));
       return;
     }
 
     const isAuth = selectedRows.every((el) => checkIssueUser(user, el));
     if (!isAuth) {
-      commonNotification.error('내가 작성한 이슈만 삭제할 수 있습니다.');
+      commonNotification.error(formatMessage({ id: 'msg-only-my-issue-delete' }));
       return;
     }
 
     const result = await confirmation({
-      title: '이슈 삭제',
-      msg: '선택한 이슈를 삭제하시겠습니까?'
+      title: formatMessage({ id: 'dialog-issue-delete' }),
+      msg: formatMessage({ id: 'dialog-confirm-issue-delete' })
     });
     if (!result) return;
 
@@ -311,7 +319,7 @@ const DeptTable = ({
     if (existRows.length > 0) {
       removeOpenIssueBatch(existRows, {
         onSuccess: () => {
-          commonNotification.success('삭제되었습니다');
+          commonNotification.success(formatMessage({ id: 'msg-deleted' }));
           refetch();
         },
         onError: (error) => handleServerError(error)
@@ -321,7 +329,7 @@ const DeptTable = ({
 
   const handleExcelUpload = () => {
     if (!selectedGroup || selectedGroup.length < 1) {
-      commonNotification.warn('그룹을 선택해주세요.');
+      commonNotification.warn(formatMessage({ id: 'msg-select-group' }));
       return;
     }
     openExcelUploadDialog();
@@ -350,8 +358,32 @@ const DeptTable = ({
   };
 
   const getRowClass = useCallback(({ data }: RowClassParams) => {
-    if (!data || !data.issueState) return undefined;
-    return data.issueState.toString() === '78106' ? 'disabled-row' : '';
+    if (!data) return undefined;
+
+    const classes: string[] = [];
+
+    // 완료된 이슈: 비활성화 스타일
+    if (data.issueState?.toString() === '78106') {
+      classes.push('completed-row');
+    }
+
+    // 지연된 이슈: 빨간 배경 강조
+    const delay = calculateDelay(data);
+    if (delay && delay > 0) {
+      classes.push('delayed-row');
+    }
+
+    // 긴급 이슈 (importance = 5): 좌측 빨간 보더
+    if (data.importance === '5') {
+      classes.push('urgent-row');
+    }
+
+    // 지시사항 (importance = 4): 좌측 보라 보더
+    if (data.importance === '4') {
+      classes.push('instruction-row');
+    }
+
+    return classes.join(' ');
   }, []);
 
   const rowSelection = useMemo<RowSelectionOptions>(
@@ -366,7 +398,7 @@ const DeptTable = ({
     if (!node) return [];
     return [
       {
-        name: '의견 등록',
+        name: formatMessage({ id: 'label-comment-regist' }),
         action: () => {
           issueCommentDrawerRef.current?.open();
         }
@@ -380,7 +412,7 @@ const DeptTable = ({
       { oid: targetIssue.oid, files },
       {
         onSuccess: () => {
-          commonNotification.success('업로드되었습니다');
+          commonNotification.success(formatMessage({ id: 'msg-uploaded' }));
           refetch();
           refetchFileList();
         },
@@ -433,7 +465,7 @@ const DeptTable = ({
     // api 호출
     insOpenIssueV2(processed, {
       onSuccess: () => {
-        commonNotification.success('저장되었습니다');
+        commonNotification.success(formatMessage({ id: 'msg-saved' }));
         refetch();
       },
       onError: handleServerError
@@ -442,14 +474,14 @@ const DeptTable = ({
 
   const handleFileDelete = async (file: CommonFile) => {
     const result = await confirmation({
-      title: '파일 삭제',
-      msg: '선택한 파일을 삭제하시겠습니까?'
+      title: formatMessage({ id: 'dialog-file-delete' }),
+      msg: formatMessage({ id: 'dialog-confirm-file-delete' })
     });
     if (!result) return;
 
     deleteFile(file.fileOid, {
       onSuccess: () => {
-        commonNotification.success('삭제되었습니다');
+        commonNotification.success(formatMessage({ id: 'msg-deleted' }));
         refetchFileList();
       },
       onError: (error) => handleServerError(error)
@@ -498,7 +530,7 @@ const DeptTable = ({
 
   const IssueDrawerActions = () => {
     return (
-      <Tooltip title="파일">
+      <Tooltip title={formatMessage({ id: 'label-file' })}>
         <IconButton
           onClick={() => {
             issueCommentDrawerRef.current?.close();
@@ -514,7 +546,7 @@ const DeptTable = ({
 
   const UploadDrawerActions = () => {
     return (
-      <Tooltip title="의견">
+      <Tooltip title={formatMessage({ id: 'label-comment' })}>
         <IconButton
           onClick={() => {
             fileUploadDrawerRef.current?.close();
@@ -528,73 +560,93 @@ const DeptTable = ({
     );
   };
 
+  const handleKanbanCardClick = (issue: OpenIssueType) => {
+    setTargetIssue(issue);
+    issueCommentDrawerRef.current?.open();
+  };
+
   return (
     <Box p={1} pb={0} display={'flex'} flexDirection={'column'} flex={'0 1 85vw'}>
-      <Toolbar
-        title={formatMessage({ id: 'deptOILTitle' })}
-        description={currentIssueGroupNm}
-        tooltip={<TooltipContent />}
-        ref={toolbarRef}
-        btnActions={btnActions}
-        onSubmit={(values) => {
-          setSearchParam(values);
-        }}
-        initialValues={{}}
-        direction="end"
-        loadingState={{
-          saveLoading: isPending
-        }}
-      />
-      <CommonGrid
-        ref={groupGridRef}
-        gridProps={{
-          columnDefs: deptOILColumns,
-          rowData: rowData,
-          onCellValueChanged: onUpdateCells,
-          pagination: true,
-          paginationPageSize: 50,
-          paginationPageSizeSelector: [10, 20, 50, 100],
-          loading: isFetching,
-          getRowClass: getRowClass,
-          getRowHeight: ({ data }) => {
-            const lines = (data?.description?.match(/\n/g) || []).length + 1;
-            if (lines > 1 && lines <= 5) return lines * 25;
-            else if (lines > 5) return 5 * 24;
-            return 28;
-          },
-          // onCellEditingStarted: ({ event, node, api }) => {
-          //   const cell = (event?.target as any)?.closest('.ag-cell');
+      <Box display="flex" alignItems="center" gap={1}>
+        <Box flex={1}>
+          <Toolbar
+            title={formatMessage({ id: 'deptOILTitle' })}
+            description={currentIssueGroupNm}
+            tooltip={<TooltipContent />}
+            ref={toolbarRef}
+            btnActions={btnActions}
+            onSubmit={(values) => {
+              setSearchParam(values);
+            }}
+            initialValues={{}}
+            direction="end"
+            loadingState={{
+              saveLoading: isPending
+            }}
+          />
+        </Box>
+        <Tooltip title={formatMessage({ id: 'meeting-summary-title' })}>
+          <IconButton size="small" onClick={() => meetingSummaryDrawerRef.current?.open()} sx={{ height: 32, width: 32 }}>
+            <FileText size={16} />
+          </IconButton>
+        </Tooltip>
+        <ToggleButtonGroup
+          value={viewMode}
+          exclusive
+          onChange={(_, val) => val && setViewMode(val)}
+          size="small"
+          sx={{ height: 32 }}
+        >
+          <ToggleButton value="grid" aria-label="grid view">
+            <LayoutList size={16} />
+          </ToggleButton>
+          <ToggleButton value="kanban" aria-label="kanban view">
+            <LayoutGrid size={16} />
+          </ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
 
-          //   if (!cell) return;
+      {viewMode === 'grid' ? (
+        <>
+          {/* Smartsheet 스타일 Quick Filter */}
+          <QuickFilterChips gridRef={groupGridRef} userId={user?.oid} />
+          <CommonGrid
+            ref={groupGridRef}
+            gridProps={{
+              columnDefs: deptOILColumns,
+              rowData: rowData,
+              onCellValueChanged: onUpdateCells,
+              pagination: true,
+              paginationPageSize: 50,
+              paginationPageSizeSelector: [10, 20, 50, 100],
+              loading: isFetching,
+              getRowClass: getRowClass,
+              getRowHeight: ({ data }) => {
+                const lines = (data?.description?.match(/\n/g) || []).length + 1;
+                if (lines > 1 && lines <= 5) return lines * 25;
+                else if (lines > 5) return 5 * 24;
+                return 28;
+              },
+              getContextMenuItems: getContextMenuItems,
+              onCellContextMenu: ({ node }) => {
+                setTargetIssue(node.data);
+              },
+              rowSelection,
+              context: {
+                id: gridId
+              }
+            }}
+            autoSizeMode={'fullWidth'}
+          />
+        </>
+      ) : (
+        <KanbanBoard
+          issues={rowData}
+          onCardClick={handleKanbanCardClick}
+          refetch={() => refetch()}
+        />
+      )}
 
-          //   const textarea = cell.querySelector('textarea');
-          //   if (!textarea) return;
-
-          //   // textarea 높이 계산
-          //   // textarea.style.height = 'auto';
-          //   // textarea.style.height = `${textarea.scrollHeight}px`;
-
-          //   const newHeight = textarea.scrollHeight + 18;
-
-          //   node.setRowHeight(newHeight);
-          //   api.onRowHeightChanged();
-          // },
-          // onCellEditingStopped: ({ node, api }) => {
-          //   api.resetRowHeights();
-          // },
-          getContextMenuItems: getContextMenuItems,
-          onCellContextMenu: ({ node }) => {
-            setTargetIssue(node.data);
-          },
-          rowSelection,
-          context: {
-            id: gridId
-          }
-          // isExternalFilterPresent,
-          // doesExternalFilterPass
-        }}
-        autoSizeMode={'fullWidth'}
-      />
       <IssueCommentDrawer ref={issueCommentDrawerRef} issue={targetIssue} refetchIssues={refetch} Actions={IssueDrawerActions} />
       <FileUploadDrawer
         ref={fileUploadDrawerRef}
@@ -627,6 +679,11 @@ const DeptTable = ({
         ]}
         columnDefs={deptOILColumns}
         initRow={initOpenIssue}
+      />
+      <MeetingSummaryDrawer
+        ref={meetingSummaryDrawerRef}
+        issues={rowData}
+        groupName={currentIssueGroupNm}
       />
     </Box>
   );

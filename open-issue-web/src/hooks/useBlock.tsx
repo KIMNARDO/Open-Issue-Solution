@@ -5,9 +5,11 @@ import { commonNotification } from 'api/common/notification';
 import useBasicDialog from 'components/dialogs/useBasicDialog';
 import { useEffect } from 'react';
 import { useBlocker } from 'react-router';
+import { useIntl } from 'react-intl';
 
 export const useCustomBlocker = (predicate: () => boolean, saveCallback?: (onSuccess: () => void) => void) => {
   const blocker = useBlocker(({ currentLocation, nextLocation }) => predicate() && currentLocation.pathname !== nextLocation.pathname);
+  const { formatMessage } = useIntl();
 
   const { BasicDialog, handleClose, handleOpen } = useBasicDialog();
 
@@ -23,30 +25,30 @@ export const useCustomBlocker = (predicate: () => boolean, saveCallback?: (onSuc
   const BlockDialog = () => (
     <BasicDialog
       options={{
-        title: '페이지 이동',
-        confirmText: '예',
-        cancelText: '아니오'
+        title: formatMessage({ id: 'dialog-page-move' }),
+        confirmText: formatMessage({ id: 'btn-yes' }),
+        cancelText: formatMessage({ id: 'btn-no' })
       }}
       overrideButtons={
         saveCallback
           ? [
               {
-                btnLabel: '예',
+                btnLabel: formatMessage({ id: 'btn-yes' }),
                 btnOptions: { color: 'primary', variant: 'outlined', endIcon: <FontAwesomeIcon icon={faCheck} /> },
                 btnAction: () => blocker.proceed && blocker.proceed()
               },
               {
-                btnLabel: '아니오',
+                btnLabel: formatMessage({ id: 'btn-no' }),
                 btnOptions: { color: 'primary', variant: 'outlined', endIcon: <FontAwesomeIcon icon={faXmark} /> },
                 btnAction: closeBtnHandler
               },
               {
-                btnLabel: '저장 후 이동',
+                btnLabel: formatMessage({ id: 'btn-save-and-move' }),
                 btnOptions: { color: 'primary', variant: 'contained', endIcon: <FontAwesomeIcon icon={faSave} /> },
                 btnAction: () => {
                   saveCallback(() => {
                     handleClose();
-                    commonNotification.success('저장되었습니다');
+                    commonNotification.success(formatMessage({ id: 'msg-saved' }));
                     blocker.proceed && blocker.proceed();
                   });
                 }
@@ -54,12 +56,12 @@ export const useCustomBlocker = (predicate: () => boolean, saveCallback?: (onSuc
             ]
           : [
               {
-                btnLabel: '예',
+                btnLabel: formatMessage({ id: 'btn-yes' }),
                 btnOptions: { color: 'primary', variant: 'outlined', endIcon: <FontAwesomeIcon icon={faCheck} /> },
                 btnAction: () => blocker.proceed && blocker.proceed()
               },
               {
-                btnLabel: '아니오',
+                btnLabel: formatMessage({ id: 'btn-no' }),
                 btnOptions: { color: 'primary', variant: 'outlined', endIcon: <FontAwesomeIcon icon={faXmark} /> },
                 btnAction: closeBtnHandler
               }
@@ -70,7 +72,7 @@ export const useCustomBlocker = (predicate: () => boolean, saveCallback?: (onSuc
       }}
     >
       <Box display={'flex'} justifyContent={'start'} alignItems={'center'}>
-        <Typography sx={{ py: 2, mx: 10 }}>수정중인 데이터가 있습니다. 진행하시겠습니까?</Typography>
+        <Typography sx={{ py: 2, mx: 10 }}>{formatMessage({ id: 'msg-confirm-unsaved' })}</Typography>
       </Box>
     </BasicDialog>
   );

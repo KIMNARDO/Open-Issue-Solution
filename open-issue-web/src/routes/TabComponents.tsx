@@ -1,57 +1,42 @@
 import Loadable from 'components/Loadable';
 import { lazy } from 'react';
 
+// Open Issue 전용 모드 - 필요한 컴포넌트만 로드
 const Dashboard = Loadable(lazy(() => import('pages/dashboard/Dashboard')));
-const UserManage = Loadable(lazy(() => import('pages/system/user-manage')));
-const AuthManage = Loadable(lazy(() => import('pages/system/auth-manage')));
-const LibraryManage = Loadable(lazy(() => import('pages/system/library-manage')));
-const CodeLibraryManage = Loadable(lazy(() => import('pages/system/code-library-manage')));
-const AssessLibraryManage = Loadable(lazy(() => import('pages/system/assess-library-manage')));
-// const AppDrawingManage = Loadable(lazy(() => import('pages/app-drw/drawing')));
-// const DrawingChange = Loadable(lazy(() => import('pages/app-drw/drawing-change')));
-const Approval = Loadable(lazy(() => import('pages/user-task/approval')));
-const MyTask = Loadable(lazy(() => import('pages/user-task/my-task')));
-const OpenIssue = Loadable(lazy(() => import('pages/qms/open-issue')));
-const Calendar = Loadable(lazy(() => import('pages/system/calendar')));
-const ProjectTemplate = Loadable(lazy(() => import('pages/project-template')));
-const SalesOrderProject = Loadable(lazy(() => import('pages/sales')));
-const DevProject = Loadable(lazy(() => import('pages/project/dev')));
-const BbsManage = Loadable(lazy(() => import('pages/system/bbs')));
-const DocumentRegist = Loadable(lazy(() => import('pages/document/regist')));
-const DocClass = Loadable(lazy(() => import('pages/doc-class/search')));
-const DocumentSearch = Loadable(lazy(() => import('pages/document/search')));
+const OpenIssue = Loadable(lazy(() => import('pages/qms/qms/open-issue')));
 
-const EbomManage = Loadable(lazy(() => import('pages/ebom')));
-const EbomRegist = Loadable(lazy(() => import('pages/ebom/regist')));
-
-const EcrSearch = Loadable(lazy(() => import('pages/ecr/search')));
-const EcrRegist = Loadable(lazy(() => import('pages/ecr/regist')));
-const EcoSearch = Loadable(lazy(() => import('pages/eco/search')));
-const EcoRegist = Loadable(lazy(() => import('pages/eco/regist')));
+// Placeholder 컴포넌트 - 개발 모드용
+const PlaceholderPage = ({ title }: { title: string }) => (
+  <div style={{ padding: '20px', textAlign: 'center' }}>
+    <h2>{title}</h2>
+    <p>This page is not available in Open Issue standalone mode.</p>
+  </div>
+);
 
 export const TabComponents: Record<string, JSX.Element> = {
   dashboard: <Dashboard />,
-  '38': <Calendar />, // 캘린더
-  '39': <UserManage />, // 사용자 관리
-  '41': <AuthManage />, // 권한 관리
-  '40': <LibraryManage />, // 라이브러리 관리
-  '59': <CodeLibraryManage />, // 코드 라이브러리 관리
-  '60': <AssessLibraryManage />, // 영향성 평가 라이브러리 관리
-  '13': <EbomManage />, // E-BOM 검색
-  '45': <EbomRegist />, // E-BOM 등록
   '62': <OpenIssue />, // 오픈이슈
-  '42': <Approval />,
-  '1': <MyTask />,
-  '2': <DevProject />, // 개발 프로젝트
-  '52': <BbsManage />, // 공지사항 관리
-  '27': <DocumentSearch />, // 문서 검색
-  '28': <DocumentRegist />, // 문서 등록
-  '29': <DocumentSearch mode="progress" />, // 작성/반려 문서 검색
-  '67': <DocClass />, // 문서분류체계
-  '3': <ProjectTemplate />, // 프로젝트 템플릿
-  '11': <SalesOrderProject />, // 영업수주
-  '19': <EcoSearch />, // ECO 검색
-  '22': <EcrSearch />, // ECR 검색
-  '49': <EcoRegist />, // ECO 등록
-  '48': <EcrRegist /> // ECR 등록
+  // Placeholder for other routes that might be referenced
+  '38': <PlaceholderPage title="Calendar" />,
+  '39': <PlaceholderPage title="User Management" />,
+  '41': <PlaceholderPage title="Auth Management" />,
+  '40': <PlaceholderPage title="Library Management" />,
+  '59': <PlaceholderPage title="Code Library Management" />,
+  '60': <PlaceholderPage title="Assess Library Management" />,
+  '13': <PlaceholderPage title="E-BOM Search" />,
+  '45': <PlaceholderPage title="E-BOM Registration" />,
+  '42': <PlaceholderPage title="Approval" />,
+  '1': <PlaceholderPage title="My Task" />,
+  '2': <PlaceholderPage title="Dev Project" />,
+  '52': <PlaceholderPage title="Notice Management" />,
+  '27': <PlaceholderPage title="Document Search" />,
+  '28': <PlaceholderPage title="Document Registration" />,
+  '29': <PlaceholderPage title="Draft/Rejected Documents" />,
+  '67': <PlaceholderPage title="Document Classification" />,
+  '3': <PlaceholderPage title="Project Template" />,
+  '11': <PlaceholderPage title="Sales Order" />,
+  '19': <PlaceholderPage title="ECO Search" />,
+  '22': <PlaceholderPage title="ECR Search" />,
+  '49': <PlaceholderPage title="ECO Registration" />,
+  '48': <PlaceholderPage title="ECR Registration" />
 };

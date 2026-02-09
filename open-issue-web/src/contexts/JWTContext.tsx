@@ -15,11 +15,24 @@ import useLibrary from 'hooks/useLibrary';
 import libraryService from 'api/system/library/libraryService';
 import { BPolicyAuth, DObject } from 'api/common/common.types';
 
+// 개발 모드 인증 우회 설정
+const DEV_BYPASS_AUTH = import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+
+// Mock user for development
+const mockUser = {
+  oid: 1,
+  accountId: 'dev_user',
+  name: '개발자',
+  email: 'dev@openissue.local',
+  deptName: '개발팀',
+  groupAuthority: []
+};
+
 // constant
 const initialState: AuthProps = {
-  isLoggedIn: false,
-  isInitialized: false,
-  user: null
+  isLoggedIn: DEV_BYPASS_AUTH,
+  isInitialized: DEV_BYPASS_AUTH,
+  user: DEV_BYPASS_AUTH ? mockUser : null
 };
 
 const verifyToken: (st: string) => boolean = (serviceToken) => {
@@ -69,6 +82,12 @@ export const JWTProvider = ({ children }: { children: React.ReactElement }) => {
 
   useEffect(() => {
     const init = async () => {
+      // 개발 모드에서는 인증 우회
+      if (DEV_BYPASS_AUTH) {
+        console.log('[DEV MODE] 인증 우회 - Mock 사용자로 로그인');
+        return;
+      }
+
       try {
         const serviceToken = window.localStorage.getItem('serviceToken');
         if (serviceToken && verifyToken(serviceToken)) {

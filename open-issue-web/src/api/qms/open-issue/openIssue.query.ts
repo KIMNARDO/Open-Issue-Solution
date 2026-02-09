@@ -1,4 +1,4 @@
-import { OpenIssueType } from 'pages/qms/open-issue';
+import { OpenIssueType } from 'pages/qms/qms/open-issue';
 import { IssueValidationType, OpenissueComment, OpenissueGroup, OpenIssueSearch } from './openIssue.types';
 import openIssueService from './openIssueService';
 
@@ -10,7 +10,8 @@ type queryKeyNames =
   | 'openIssueGroupDetail'
   | 'openIssueCommentList'
   | 'openIssueCommentDetail'
-  | 'openIssueGroupCategory';
+  | 'openIssueGroupCategory'
+  | 'activityLog';
 
 type mutationKeyNames =
   | 'insOpenIssue'
@@ -34,7 +35,8 @@ export const queryKeys: Record<queryKeyNames, any> = {
   openIssueGroupDetail: (oid: number) => ['openIssue', 'group', 'detail', oid] as const,
   openIssueCommentList: (openIssueOid: number) => ['openIssue', 'comment', 'list', openIssueOid] as const,
   openIssueCommentDetail: (comment: OpenissueComment) => ['openIssue', 'comment', 'detail', comment.openIssueOid, comment.oid] as const,
-  openIssueGroupCategory: (openIssueCategoryOid: number) => ['openIssue', 'group', 'category', openIssueCategoryOid] as const
+  openIssueGroupCategory: (openIssueCategoryOid: number) => ['openIssue', 'group', 'category', openIssueCategoryOid] as const,
+  activityLog: (issueOid: number) => ['openIssue', 'activity', issueOid] as const
 };
 
 export const mutationKeys: Record<mutationKeyNames, any> = {
@@ -89,6 +91,11 @@ export const queryOptions = {
     queryKey: queryKeys.openIssueGroupCategory(openIssueCategoryOid),
     queryFn: () => openIssueService.getGroupCategory(openIssueCategoryOid),
     enabled: !!openIssueCategoryOid && openIssueCategoryOid > 0
+  }),
+  activityLog: (issueOid: number) => ({
+    queryKey: queryKeys.activityLog(issueOid),
+    queryFn: () => openIssueService.getActivityLog(issueOid),
+    enabled: !!issueOid && issueOid > 0
   })
 };
 

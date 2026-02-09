@@ -7,13 +7,17 @@ import * as antIcons from '@ant-design/icons';
 import { ChipProps } from '@mui/material';
 import { confirmation } from 'components/confirm/CommonConfirm';
 import { User } from 'api/system/user/user.types';
+import { IntlShape } from 'react-intl';
 
-const getDevMenuProps = (isDev: boolean) => {
+const getDevMenuProps = (isDev: boolean, intl?: IntlShape) => {
+  const devLabel = intl?.formatMessage({ id: 'status-dev' }) || '개발중';
+  const devMsg = intl?.formatMessage({ id: 'status-dev-msg' }) || '개발중인 화면입니다.';
+
   const devProps = {
     onMenuClick: () =>
       confirmation({
-        title: '개발중',
-        msg: '개발중인 화면입니다.',
+        title: devLabel,
+        msg: devMsg,
         buttonProps: {
           cancel: {
             hideBtn: true
@@ -21,7 +25,7 @@ const getDevMenuProps = (isDev: boolean) => {
         }
       }),
     chip: {
-      label: '개발중',
+      label: devLabel,
       color: 'error',
       size: 'small'
     } as ChipProps
@@ -30,26 +34,31 @@ const getDevMenuProps = (isDev: boolean) => {
   return isDev ? devProps : {};
 };
 
-export const parseMenuItems = (menuItems: Menu[], user: User): { items: NavItemType[] } => {
+export const parseMenuItems = (menuItems: Menu[], user: User, intl?: IntlShape): { items: NavItemType[] } => {
   const items: NavItemType[] = [];
   if (menuItems.length < 1) return { items };
 
   for (const item of menuItems) {
+    // 번역 키인 경우 번역 적용, 아니면 원본 사용
+    const translatedName = intl && item.name.startsWith('menu-')
+      ? intl.formatMessage({ id: item.name })
+      : item.name;
+
     const node: NavItemType = {
       ...{
         id: item.oid.toString(),
-        title: item.name,
+        title: translatedName,
         type: !item.menuOID && !item.link ? 'D' : 'M',
         url: item.link,
 
         // @ts-ignore
         icon: antIcons[item.icon]
       },
-      ...getDevMenuProps(item.menuRemark === MENU_STATUS.DEV)
+      ...getDevMenuProps(item.menuRemark === MENU_STATUS.DEV, intl)
     };
 
     if (item.childMenu && item.childMenu.length > 0) {
-      const children = parseMenuItems(item.childMenu, user).items;
+      const children = parseMenuItems(item.childMenu, user, intl).items;
       node.children = children;
     }
 

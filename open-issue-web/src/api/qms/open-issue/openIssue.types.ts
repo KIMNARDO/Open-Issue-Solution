@@ -84,6 +84,7 @@ export type OpenIssueSearch = Partial<IssueValidationType> & {
 export interface OpenIssueMenu {
   key: string;
   title: string;
+  labelKey?: string;
   type: string;
   data: any;
   children: OpenIssueMenu[];

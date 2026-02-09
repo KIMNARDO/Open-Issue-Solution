@@ -22,6 +22,8 @@ export const librarySchema = y.object({
 export type DLibrary = {
   oid?: number;
   korNm?: string;
+  engNm?: string;
+  labelKey?: string;
   fromOID?: number;
   toOID?: number;
   isUse: string;

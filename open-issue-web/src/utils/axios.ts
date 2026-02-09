@@ -1,5 +1,8 @@
 import axios, { AxiosRequestConfig } from 'axios';
 
+// 개발 모드 인증 우회 설정
+const DEV_BYPASS_AUTH = import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
+
 const axiosServices = axios.create({ baseURL: import.meta.env.VITE_APP_API_URL });
 export const loginAxios = axios.create({ baseURL: import.meta.env.VITE_APP_API_URL });
 
@@ -29,7 +32,12 @@ axiosServices.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response.status === 401 && (!window.location.href.includes('login') || window.location.pathname !== '/')) {
+    // 개발 모드에서는 401 에러 시 리다이렉트 하지 않음
+    if (DEV_BYPASS_AUTH) {
+      console.log('[DEV MODE] API 에러 무시:', error.response?.status, error.config?.url);
+      return Promise.reject(error);
+    }
+    if (error.response?.status === 401 && (!window.location.href.includes('login') || window.location.pathname !== '/')) {
       localStorage.removeItem('serviceToken');
       window.location.pathname = '/login';
     }

@@ -1,7 +1,7 @@
 import { ValueFormatterFunc, ValueFormatterParams } from 'ag-grid-community';
 import dayjs from 'dayjs';
 import { ExColDef } from './grid.types';
-import { calculateDelay } from 'pages/qms/open-issue/util';
+import { calculateDelay } from 'pages/qms/qms/open-issue/util';
 
 export const commonDateFormatter = ({ value }: ValueFormatterParams): string => {
   return dayjs(value).isValid() ? dayjs(value).format('YYYY-MM-DD') : '-';
@@ -28,9 +28,18 @@ export const issueDelayFormatter = (): Partial<ExColDef> => {
     },
     cellStyle: ({ data }) => {
       const delay = calculateDelay(data);
-      return delay && delay > 0
-        ? { color: 'red', textAlign: 'center', backgroundColor: 'transparent' }
-        : { color: 'text', textAlign: 'center', backgroundColor: 'transparent' };
+      if (!delay || delay <= 0) {
+        return { color: 'inherit', textAlign: 'center', backgroundColor: 'transparent', fontWeight: 400 };
+      }
+      // 지연 심각도 그라데이션 (Smartsheet 스타일)
+      if (delay >= 8) {
+        return { color: '#b71c1c', textAlign: 'center', backgroundColor: 'rgba(244, 67, 54, 0.15)', fontWeight: 700 };
+      }
+      if (delay >= 4) {
+        return { color: '#d32f2f', textAlign: 'center', backgroundColor: 'rgba(244, 67, 54, 0.08)', fontWeight: 600 };
+      }
+      // 1~3일
+      return { color: '#e65100', textAlign: 'center', backgroundColor: 'transparent', fontWeight: 500 };
     }
   };
 };

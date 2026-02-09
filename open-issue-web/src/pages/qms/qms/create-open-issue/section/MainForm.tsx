@@ -12,7 +12,7 @@ import FormSelect from 'components/select/FormSelect';
 import { useMemo, useState } from 'react';
 import useColumns from '../columns/project.column';
 import dayjs from 'dayjs';
-import { importanceList } from 'pages/qms/open-issue';
+import { importanceList } from 'pages/qms/qms/open-issue';
 import { SelectboxType } from 'components/select/selectbox.types';
 import EditableCombo from 'components/select/EditableCombo';
 import { useIntl } from 'react-intl';

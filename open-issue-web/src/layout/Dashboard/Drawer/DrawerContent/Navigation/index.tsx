@@ -18,6 +18,7 @@ import { useMenuList } from 'api/system/menu/useMenuService';
 import { parseMenuItems } from 'api/system/menu/utils';
 import useAuth from 'hooks/useAuth';
 import { useStackBar } from '../../StackBar/store/useStackBar';
+import { useIntl } from 'react-intl';
 
 // ==============================|| DRAWER CONTENT - NAVIGATION ||============================== //
 
@@ -27,6 +28,7 @@ const Navigation = () => {
   const theme = useTheme();
   const { menuOrientation } = useConfig();
   const downLG = useMediaQuery(theme.breakpoints.down('lg'));
+  const intl = useIntl();
 
   const [selectedID, setSelectedID] = useState<string | undefined>('');
   const [selectedItems, setSelectedItems] = useState<string | undefined>('');
@@ -48,12 +50,12 @@ const Navigation = () => {
             child.childMenu = [];
           });
       });
-      const _menus = parseMenuItems(menuItem, user);
+      const _menus = parseMenuItems(menuItem, user, intl);
 
       setMenuItems(_menus);
       setMenuList(_menus.items);
     }
-  }, [menuItem, user]);
+  }, [menuItem, user, intl]);
 
   const isHorizontal = menuOrientation === MenuOrientation.HORIZONTAL && !downLG;
 

@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 import { importanceList, OpenIssueType } from '..';
 import { CellStyle, GridApi, IRowNode } from 'ag-grid-community';
 import { useUsers } from 'api/system/user/useUserService';
-import { gateList } from 'pages/qms/create-open-issue/section/MainForm';
+import { gateList } from 'pages/qms/qms/create-open-issue/section/MainForm';
 import { useIntl } from 'react-intl';
 import useLibrary from 'hooks/useLibrary';
 import UserSearchRenderer from 'components/cellEditor/UserSearchRenderer';
@@ -20,6 +20,8 @@ import { codeLibQueryOptions } from 'api/system/library/library.query';
 import MultiFileUploadRenderer from 'components/cellEditor/MultiFileUploadRenderer';
 import { OpenIssueEtcStatusRenderer, OpenIssueEtcStatusHeader } from 'components/cellEditor/OpenIssueEtcStatusRenderer';
 import MultilineRenderer from 'components/cellEditor/MultilineRenderer';
+import { ImportanceRenderer } from 'components/cellEditor/ImportanceRenderer';
+import { IssueStatusRenderer } from 'components/cellEditor/IssueStatusRenderer';
 
 interface DevColumnOptions {}
 interface DeptColumnOptions {
@@ -43,6 +45,7 @@ const commonCellStyle: CellStyle = {
 
 const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumnsProps) => {
   const { user } = useAuth();
+  const { formatMessage } = useIntl();
 
   const { librarySelect } = useLibrary();
 
@@ -64,29 +67,77 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'name',
-        headerName: '이슈명',
+        headerName: formatMessage({ id: 'col-issue-name' }),
         editable: false,
         minWidth: 100
       }
     ],
-    []
+    [formatMessage]
   );
 
-  const { formatMessage } = useIntl();
-
   const selectOptions = useMemo(() => {
+    // 중요도 리스트 번역 적용
+    const translatedImportance = importanceList.map((item) => ({
+      label: item.labelKey ? formatMessage({ id: item.labelKey }) : item.label,
+      value: item.value
+    }));
+
+    // 구분(내부/고객) 번역 매핑
+    const placeOfIssueKeyMap: Record<string, string> = {
+      '내부': 'type-internal',
+      '고객': 'type-customer'
+    };
+
+    // 양산처/지역 번역 매핑
+    const productionSiteKeyMap: Record<string, string> = {
+      '인도': 'site-india',
+      '일본': 'site-japan',
+      '중국': 'site-china',
+      '한국': 'site-korea',
+      '본사': 'site-hq',
+      '유럽': 'site-europe',
+      '해외': 'site-overseas',
+      '태국': 'site-thailand'
+    };
+
+    // 구분 옵션 번역
+    const translatedPlaceOfIssue = (librarySelect?.placeOfIssue || []).map((item) => ({
+      ...item,
+      label: placeOfIssueKeyMap[item.label] ? formatMessage({ id: placeOfIssueKeyMap[item.label] }) : item.label
+    }));
+
+    // 양산처/지역 옵션 번역
+    const translatedProductionSite = (librarySelect?.productionSite || []).map((item) => ({
+      ...item,
+      label: productionSiteKeyMap[item.label] ? formatMessage({ id: productionSiteKeyMap[item.label] }) : item.label
+    }));
+
+    // 이슈 상태 번역 매핑
+    const issueStateKeyMap: Record<string, string> = {
+      '진행': 'issue-state-open',
+      '진행중': 'issue-state-open',
+      '완료': 'issue-state-closed',
+      '대기': 'issue-state-pending'
+    };
+
+    // 이슈 상태 옵션 번역
+    const translatedIssueState = (librarySelect?.issueState || []).map((item) => ({
+      ...item,
+      label: issueStateKeyMap[item.label] ? formatMessage({ id: issueStateKeyMap[item.label] }) : item.label
+    }));
+
     return {
-      issueState: librarySelect?.issueState || [],
+      issueState: translatedIssueState,
       issueType: librarySelect?.issueType || [],
       item: librarySelect?.item || [],
       oem: librarySelect?.oem || [],
-      placeOfIssue: librarySelect?.placeOfIssue || [],
-      productionSite: librarySelect?.productionSite || [],
-      importance: importanceList,
+      placeOfIssue: translatedPlaceOfIssue,
+      productionSite: translatedProductionSite,
+      importance: translatedImportance,
       users: users?.filter((el) => el.name && el.oid).map((item) => ({ label: item.name!, value: item.oid!.toString() })) || [],
       groupCategories: categoryList?.map((item) => ({ label: item.value, value: item.oid.toString() })) || []
     };
-  }, [librarySelect, users, categoryList]);
+  }, [librarySelect, users, categoryList, formatMessage]);
 
   const openIssueColumns = useMemo<(ExColDef | ExColGroupDef)[]>(
     () => [
@@ -114,12 +165,12 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       // },
       {
         field: 'issueType',
-        headerName: 'Category',
+        headerName: formatMessage({ id: 'col-category' }),
         editable: true,
         minWidth: 120,
         ...getGridComboBoxOptions(selectOptions.issueType)
       },
-      { field: 'itemNm', headerName: 'Item', editable: false, minWidth: 120 },
+      { field: 'itemNm', headerName: formatMessage({ id: 'col-item' }), editable: false, minWidth: 120 },
       { field: 'projectNm', headerName: formatMessage({ id: 'label-programNm' }), editable: false, minWidth: 120 },
       {
         field: 'gate',
@@ -178,17 +229,24 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
           }
         }
       },
-      { field: 'importance', headerName: 'Priority', editable: true, minWidth: 90, ...getGridComboBoxOptions(selectOptions.importance) },
+      {
+        field: 'importance',
+        headerName: formatMessage({ id: 'col-priority' }),
+        editable: true,
+        minWidth: 90,
+        cellRenderer: ImportanceRenderer,
+        ...getGridComboBoxOptions(selectOptions.importance)
+      },
       {
         field: 'issueState',
-        headerName: 'Status',
+        headerName: formatMessage({ id: 'col-status' }),
         editable: ({ data }) => data.createUs === user?.oid,
         minWidth: 90,
         ...getGridComboBoxOptions(selectOptions.issueState)
       },
       {
         field: 'strDt',
-        headerName: 'Start Date',
+        headerName: formatMessage({ id: 'col-start-date' }),
         editable: true,
         minWidth: 100,
         valueFormatter: commonDateFormatter,
@@ -197,7 +255,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'finDt',
-        headerName: 'End Date',
+        headerName: formatMessage({ id: 'col-end-date' }),
         editable: true,
         minWidth: 100,
         valueFormatter: commonDateFormatter,
@@ -206,7 +264,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'duration',
-        headerName: 'Duration',
+        headerName: formatMessage({ id: 'col-duration' }),
         editable: false,
         minWidth: 90,
         valueFormatter: ({ data }) => {
@@ -215,7 +273,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'sop',
-        headerName: 'SOP',
+        headerName: formatMessage({ id: 'col-sop' }),
         editable: true,
         minWidth: 100,
         cellDataType: 'dateString',
@@ -277,6 +335,14 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
         editable: true,
         maxWidth: 100,
         ...getGridComboBoxOptions(selectOptions.placeOfIssue),
+        filter: 'agSetColumnFilter',
+        filterParams: {
+          values: selectOptions.placeOfIssue.map((s) => s.value),
+          valueFormatter: (params: any) => {
+            const match = selectOptions.placeOfIssue.find((s) => s.value === params.value);
+            return match?.label || params.value;
+          }
+        },
         cellClass: ({ data }) => {
           if (!data) return null;
           return data.isNew ? 'error-cell' : null;
@@ -290,6 +356,14 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
         minWidth: 120,
         maxWidth: 120,
         ...getGridComboBoxOptions(selectOptions.productionSite),
+        filter: 'agSetColumnFilter',
+        filterParams: {
+          values: selectOptions.productionSite.map((s) => s.value),
+          valueFormatter: (params: any) => {
+            const match = selectOptions.productionSite.find((s) => s.value === params.value);
+            return match?.label || params.value;
+          }
+        },
         cellClass: ({ data }) => {
           if (!data) return null;
           return data.isNew ? 'error-cell' : null;
@@ -305,10 +379,18 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'issueType',
-        headerName: 'Category',
+        headerName: formatMessage({ id: 'col-category' }),
         editable: true,
         minWidth: 120,
         ...getGridComboBoxOptions(selectOptions.issueType),
+        filter: 'agSetColumnFilter',
+        filterParams: {
+          values: selectOptions.issueType.map((s) => s.value),
+          valueFormatter: (params: any) => {
+            const match = selectOptions.issueType.find((s) => s.value === params.value);
+            return match?.label || params.value;
+          }
+        },
         cellClass: ({ data }) => {
           if (!data) return null;
           return data.isNew ? 'error-cell' : null;
@@ -317,7 +399,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'groupCategoryOid',
-        headerName: 'groupCategory',
+        headerName: formatMessage({ id: 'col-group-category' }),
         editable: true,
         minWidth: 120,
         ...getGridComboBoxOptions(selectOptions.groupCategories),
@@ -327,7 +409,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
         },
         cellStyle: commonCellStyle
       },
-      { field: 'deptProjectNm', headerName: 'Project', editable: true, minWidth: 120, cellStyle: commonCellStyle },
+      { field: 'deptProjectNm', headerName: formatMessage({ id: 'col-project' }), editable: true, minWidth: 120, cellStyle: commonCellStyle },
       {
         field: 'deptItemNm',
         headerName: formatMessage({ id: 'col-itemGroup' }),
@@ -337,7 +419,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'contents',
-        headerName: 'Issues',
+        headerName: formatMessage({ id: 'col-issues' }),
         editable: true,
         minWidth: 120,
         cellStyle: { ...commonCellStyle, justifyContent: 'start' }
@@ -383,13 +465,22 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'importance',
-        headerName: 'Priority',
+        headerName: formatMessage({ id: 'col-priority' }),
         editable: true,
         minWidth: 90,
+        cellRenderer: ImportanceRenderer,
         ...getGridComboBoxOptions(selectOptions.importance),
+        filter: 'agSetColumnFilter',
+        filterParams: {
+          values: selectOptions.importance.map((s) => s.value),
+          valueFormatter: (params: any) => {
+            const match = selectOptions.importance.find((s) => s.value === params.value);
+            return match?.label || params.value;
+          }
+        },
         cellStyle: commonCellStyle
       },
-      { field: 'assignedTo', headerName: 'AssignedTo', editable: true, minWidth: 90, cellStyle: commonCellStyle },
+      { field: 'assignedTo', headerName: formatMessage({ id: 'col-assigned-to' }), editable: true, minWidth: 90, cellStyle: commonCellStyle },
       {
         field: 'openIssueManager',
         headerName: formatMessage({ id: 'col-manager' }),
@@ -411,8 +502,8 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
           valueKey: 'personNm',
           rowData: memberList || [],
           tableColDef: [
-            { field: 'personNm', headerName: '이름' },
-            { field: 'departmentNm', headerName: '부서' }
+            { field: 'personNm', headerName: formatMessage({ id: 'col-name' }) },
+            { field: 'departmentNm', headerName: formatMessage({ id: 'col-department' }) }
           ],
           handleSelect: (selected: OpenissueGroupMember[], data: any, api: GridApi) => {
             data.isUpdated = true;
@@ -426,15 +517,24 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'issueState',
-        headerName: 'Status',
+        headerName: formatMessage({ id: 'col-status' }),
         editable: ({ data }) => data.createUs === user?.oid,
-        minWidth: 90,
+        minWidth: 100,
+        cellRenderer: IssueStatusRenderer,
         ...getGridComboBoxOptions(selectOptions.issueState),
+        filter: 'agSetColumnFilter',
+        filterParams: {
+          values: selectOptions.issueState.map((s) => s.value),
+          valueFormatter: (params: any) => {
+            const match = selectOptions.issueState.find((s) => s.value === params.value);
+            return match?.label || params.value;
+          }
+        },
         cellStyle: commonCellStyle
       },
       {
         field: 'strDt',
-        headerName: 'Start Date',
+        headerName: formatMessage({ id: 'col-start-date' }),
         editable: true,
         minWidth: 100,
         valueFormatter: commonDateFormatter,
@@ -444,7 +544,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'finDt',
-        headerName: 'End Date',
+        headerName: formatMessage({ id: 'col-end-date' }),
         editable: true,
         minWidth: 100,
         valueFormatter: commonDateFormatter,
@@ -454,7 +554,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'duration',
-        headerName: 'Duration',
+        headerName: formatMessage({ id: 'col-duration' }),
         editable: false,
         minWidth: 90,
         ...issueDurationFormatter(),
@@ -462,7 +562,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'delay',
-        headerName: 'Delay',
+        headerName: formatMessage({ id: 'col-delay' }),
         editable: false,
         minWidth: 90,
         ...issueDelayFormatter(),
@@ -470,7 +570,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'sop',
-        headerName: 'SOP',
+        headerName: formatMessage({ id: 'col-sop' }),
         editable: true,
         minWidth: 100,
         cellDataType: 'dateString',
@@ -478,8 +578,8 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
         valueFormatter: commonDateFormatter,
         cellStyle: commonCellStyle
       },
-      { field: 'volum', headerName: 'Volum', editable: true, minWidth: 100, cellStyle: commonCellStyle },
-      { field: 'salesYear', headerName: 'Sales/Year', editable: true, minWidth: 100, cellStyle: commonCellStyle },
+      { field: 'volum', headerName: formatMessage({ id: 'col-volum' }), editable: true, minWidth: 100, cellStyle: commonCellStyle },
+      { field: 'salesYear', headerName: formatMessage({ id: 'col-sales-year' }), editable: true, minWidth: 100, cellStyle: commonCellStyle },
       {
         field: 'createDt',
         headerName: formatMessage({ id: 'col-create-dt' }),
@@ -493,7 +593,7 @@ const useColumns = ({ actions, selectedGroup, devOption, deptOption }: UseColumn
       },
       {
         field: 'files',
-        headerName: formatMessage({ id: '파일' }),
+        headerName: formatMessage({ id: 'col-files' }),
         editable: false,
         minWidth: 120,
         cellRenderer: MultiFileUploadRenderer,
